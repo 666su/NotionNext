@@ -30,6 +30,7 @@ import CatalogDrawerWrapper from './components/CatalogDrawerWrapper'
 import CategoryItem from './components/CategoryItem'
 import Footer from './components/Footer'
 import Header from './components/Header'
+import Hero from './components/Hero'
 import InfoCard from './components/InfoCard'
 import JumpToTopButton from './components/JumpToTopButton'
 import NavPostList from './components/NavPostList'
@@ -144,6 +145,9 @@ const LayoutBase = props => {
         {/* 顶部导航栏 */}
         <Header {...props} />
 
+        {/* 博客介绍 Hero */}
+        <Hero />
+          
         <main
           id='wrapper'
           className={`${siteConfig('LAYOUT_SIDEBAR_REVERSE') ? 'flex-row-reverse' : ''} relative flex justify-between w-full gap-x-6 h-full mx-auto max-w-screen-4xl`}>
