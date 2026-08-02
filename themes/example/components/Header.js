@@ -32,7 +32,7 @@ export const Header = props => {
 
 
         {/* 中间导航 */}
-        <div className='flex-1 flex gap-8 ml-10''>
+        <div className='flex-1 flex gap-8 ml-10'>
 
           <MenuList {...props} />
 
