@@ -49,7 +49,7 @@ const LayoutBase = props => {
       <Style />
 
       {/* 页头 */}
-      <Header {...props} />
+     // <Header {...props} />
       {/* 标题栏 */}
       <TitleBar {...props} />
 
