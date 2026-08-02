@@ -4,26 +4,40 @@ import { MenuList } from './MenuList'
 
 export const Header = props => {
   return (
-    <header className='sticky top-0 z-50 w-full border-b bg-white dark:bg-black'>
-      <div className='mx-auto flex h-16 max-w-6xl items-center justify-between px-6'>
+    <header
+      className='sticky top-0 z-50 w-full 
+      border-b bg-white/80 backdrop-blur 
+      dark:bg-black/80'
+    >
 
-        {/* 左侧 Logo */}
+      <div 
+        className='mx-auto flex h-14 max-w-6xl 
+        items-center justify-between px-6'
+      >
+
+        {/* Logo */}
         <SmartLink
           href='/'
-          className='text-2xl font-bold whitespace-nowrap'>
+          className='text-xl font-semibold whitespace-nowrap'
+        >
           {siteConfig('TITLE')}
         </SmartLink>
 
-        {/* 中间菜单 */}
-        <div className='flex-1 flex justify-center'>
-          <MenuList {...props} />
+
+        {/* Menu */}
+        <nav>
+          <MenuList {...props}/>
+        </nav>
+
+
+        {/* Right */}
+        <div className='flex items-center gap-3'>
+
         </div>
 
-        {/* 右侧（以后放搜索、夜间模式） */}
-        <div className='w-32 flex justify-end'>
-        </div>
 
       </div>
+
     </header>
   )
 }
