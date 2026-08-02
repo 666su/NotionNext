@@ -49,7 +49,7 @@ const LayoutBase = props => {
       <Style />
 
       {/* 页头 */}
-     // <Header {...props} />
+      <Header {...props} />
       {/* 标题栏 */}
       <TitleBar {...props} />
 
@@ -57,13 +57,13 @@ const LayoutBase = props => {
       <div id='container-inner' className='w-full relative z-10'>
         <div
           id='container-wrapper'
-          className={`relative mx-auto justify-center md:flex py-8 px-2
+          className={`relative mx-auto justify-center md:flex py-3 px-2
           ${LAYOUT_SIDEBAR_REVERSE ? 'flex-row-reverse' : ''} 
           ${LAYOUT_VERTICAL ? 'items-center flex-col' : 'items-start'} 
           `}>
           {/* 内容 */}
           <div
-            className={`${fullWidth ? '' : LAYOUT_VERTICAL ? 'max-w-5xl' : 'max-w-3xl'} w-full xl:px-14 lg:px-4`}>
+            className={`${fullWidth ? '' : LAYOUT_VERTICAL ? 'max-w-5xl' : 'max-w-4xl'} w-full xl:px-14 lg:px-4`}>
             <Transition
               show={!onLoading}
               appear={true}
@@ -86,7 +86,7 @@ const LayoutBase = props => {
               className={`${
                 LAYOUT_VERTICAL
                   ? 'flex space-x-0 md:space-x-2 md:flex-row flex-col w-full max-w-5xl justify-center xl:px-14 lg:px-4'
-                  : 'md:w-64 sticky top-8'
+                  : 'md:w-72 sticky top-20'
               }`}>
               <SideBar {...props} />
             </div>
