@@ -60,28 +60,51 @@ export const Header = props => {
             {/* 搜索 */}
             <SmartLink
               href='/search'
-              className='flex items-center gap-2 text-sm text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white transition'
+              className='
+                hidden md:flex
+                items-center
+                justify-between
+                w-56
+                rounded-lg
+                border
+                border-gray-200
+                bg-white/70
+                dark:bg-zinc-800/80
+                dark:border-zinc-700
+                px-3
+                py-1.5
+                text-sm
+                text-gray-500
+                hover:border-gray-300
+                transition
+                flex-nowrap
+              '
             >
-              <i className='fas fa-search' />
-
-              <span>Search</span>
-
+            
+              <div className='flex items-center gap-2 whitespace-nowrap'>
+                <i className='fas fa-search' />
+                <span>Search</span>
+              </div>
+            
               <kbd
                 className='
+                  ml-4
+                  shrink-0
                   rounded-md
-                  border
-                  border-gray-200
-                  bg-white
-                  dark:bg-zinc-800
-                  dark:border-zinc-700
+                  bg-gray-50
+                  dark:bg-zinc-700
                   px-2
                   py-0.5
                   text-xs
-                  shadow-sm
+                  text-gray-400
+                  border
+                  border-gray-200
+                  dark:border-zinc-600
                 '
               >
                 Ctrl K
               </kbd>
+            
             </SmartLink>
 
           </div>
