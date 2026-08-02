@@ -2,27 +2,28 @@ import { siteConfig } from '@/lib/config'
 import SmartLink from '@/components/SmartLink'
 import { MenuList } from './MenuList'
 
-/**
- * 网站顶部
- * LOGO 和 菜单
- * @returns
- */
 export const Header = props => {
   return (
-    <header className='w-full px-6 bg-white  dark:bg-black relative z-20'>
-      <div className='mx-auto max-w-4xl md:flex justify-between items-center'>
+    <header className='sticky top-0 z-50 w-full border-b bg-white dark:bg-black'>
+      <div className='mx-auto flex h-16 max-w-6xl items-center justify-between px-6'>
+
+        {/* 左侧 Logo */}
         <SmartLink
           href='/'
-          className='logo py-6 w-full text-center md:text-left md:w-auto text-gray-dark no-underline flex justify-center items-center'>
+          className='text-2xl font-bold whitespace-nowrap'>
           {siteConfig('TITLE')}
         </SmartLink>
-        <div className='w-full md:w-auto text-center md:text-right'>
-          {/* 右侧文字 */}
-        </div>
-      </div>
 
-      {/* 菜单 */}
-      <MenuList {...props} />
+        {/* 中间菜单 */}
+        <div className='flex-1 flex justify-center'>
+          <MenuList {...props} />
+        </div>
+
+        {/* 右侧（以后放搜索、夜间模式） */}
+        <div className='w-32 flex justify-end'>
+        </div>
+
+      </div>
     </header>
   )
 }
