@@ -10,19 +10,18 @@ import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
 const Style = () => {
   return <style jsx global>{`
 
-
     /*
      * ==============================
      * 深色模式
      * ==============================
      */
 
-
     .dark body {
 
-        background-color: black;
+        background-color: #0d1117;
 
     }
+
 
 
 
@@ -31,13 +30,7 @@ const Style = () => {
      * ==============================
      * 文章标题居中
      * ==============================
-     *
-     * Example主题标题:
-     *
-     * <h1 class="text-2xl font-semibold">
-     *
      */
-
 
     #theme-example .border-b h1 {
 
@@ -55,11 +48,6 @@ const Style = () => {
      * ==============================
      * 正文首行缩进
      * ==============================
-     *
-     * 普通正文:
-     *
-     * <div class="notion-text">
-     *
      */
 
 
@@ -69,6 +57,8 @@ const Style = () => {
 
         line-height: 1.8;
 
+        margin-bottom: 1em;
+
     }
 
 
@@ -77,23 +67,31 @@ const Style = () => {
 
     /*
      * ==============================
-     * Callout取消缩进
+     * 有序列表 / 无序列表
      * ==============================
      *
-     * 实际结构:
+     * HTML:
      *
-     * <div class="notion-callout-text">
-     *
-     *     <div class="notion-text">
-     *
-     *     </div>
-     *
-     * </div>
+     * <ol class="notion-list notion-list-numbered">
      *
      */
 
 
-    #theme-example .notion-callout-text .notion-text {
+    #theme-example ol.notion-list,
+    #theme-example ul.notion-list {
+
+        padding-left: 32px !important;
+
+        text-indent: 0 !important;
+
+        line-height: 1.8;
+
+    }
+
+
+
+    #theme-example ol.notion-list li,
+    #theme-example ul.notion-list li {
 
         text-indent: 0 !important;
 
@@ -105,12 +103,12 @@ const Style = () => {
 
     /*
      * ==============================
-     * 列表取消缩进
+     * Callout取消缩进
      * ==============================
      */
 
 
-    #theme-example .notion-list .notion-text {
+    #theme-example .notion-callout-text .notion-text {
 
         text-indent: 0 !important;
 
@@ -164,6 +162,42 @@ const Style = () => {
     #theme-example .notion-image .notion-text {
 
         text-indent: 0 !important;
+
+    }
+
+
+
+
+
+    /*
+     * ==============================
+     * 表格取消缩进
+     * ==============================
+     */
+
+
+    #theme-example .notion-table .notion-text {
+
+        text-indent: 0 !important;
+
+    }
+
+
+
+
+
+    /*
+     * ==============================
+     * 分割线
+     * ==============================
+     */
+
+
+    #theme-example hr {
+
+        margin-top: 24px;
+
+        margin-bottom: 24px;
 
     }
 
