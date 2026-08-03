@@ -10,9 +10,11 @@ import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
 const Style = () => {
   return <style jsx global>{`
 
-  // ==============================
-  // 基础
-  // ==============================
+  /*
+   * ==============================
+   * 基础设置
+   * ==============================
+   */
 
 
   // 底色
@@ -37,41 +39,51 @@ const Style = () => {
 
 
   #theme-simple .blog-item-title {
-    color: #276077;
+
+      color: #276077;
+
   }
 
 
 
   .dark #theme-simple .blog-item-title {
-    color: #d1d5db;
+
+      color: #d1d5db;
+
   }
 
 
 
   .notion {
 
-    margin-top: 0 !important;
+      margin-top: 0 !important;
 
-    margin-bottom: 0 !important;
+      margin-bottom: 0 !important;
 
   }
 
 
 
 
-  // ==============================
-  // 文章标题
-  // ==============================
+  /*
+   * ==============================
+   * 文章标题
+   * ==============================
+   */
 
 
   /*
    * Simple主题文章标题
-   * 实际DOM:
-   * <h2 class="notion-h notion-h1">
+   *
+   * HTML:
+   *
+   * <div class="px-6 py-4 mb-4 border-b">
+   *     <h1 class="text-2xl font-semibold">
+   *
    */
 
 
-  h2.notion-h1 {
+  #theme-simple .px-6.py-4.mb-4.border-b h1 {
 
       text-align: center !important;
 
@@ -83,27 +95,39 @@ const Style = () => {
 
 
 
-  .notion-h {
 
-      text-indent: 0 !important;
+  /*
+   * 防止标题图标影响居中
+   */
+
+  #theme-simple .px-6.py-4.mb-4.border-b h1 img {
+
+      display: inline-block;
+
+      vertical-align: middle;
 
   }
 
 
 
 
-  // ==============================
-  // 正文
-  // ==============================
-
 
   /*
-   * 正文:
-   * <div class="notion-text">
+   * ==============================
+   * 正文排版
+   * ==============================
    */
 
 
-  div.notion-text {
+  /*
+   * Notion正文:
+   *
+   * <div class="notion-text">
+   *
+   */
+
+
+  #theme-simple .notion-text {
 
       text-indent: 2em !important;
 
@@ -114,16 +138,38 @@ const Style = () => {
 
 
 
+  /*
+   * ==============================
+   * 特殊模块取消缩进
+   * ==============================
+   */
 
-  // ==============================
-  // 特殊块取消缩进
-  // ==============================
+
+  #theme-simple .notion-callout {
+
+      text-indent: 0 !important;
+
+  }
 
 
-  .notion-callout,
-  .notion-code,
-  .notion-list,
-  .notion-quote {
+
+  #theme-simple .notion-code {
+
+      text-indent: 0 !important;
+
+  }
+
+
+
+  #theme-simple .notion-list {
+
+      text-indent: 0 !important;
+
+  }
+
+
+
+  #theme-simple .notion-quote {
 
       text-indent: 0 !important;
 
@@ -133,9 +179,11 @@ const Style = () => {
 
 
 
-  // ==============================
-  // 菜单下划线动画
-  // ==============================
+  /*
+   * ==============================
+   * 菜单下划线动画
+   * ==============================
+   */
 
 
   #theme-simple .menu-link {
@@ -169,9 +217,12 @@ const Style = () => {
 
 
 
-  // ==============================
-  // Simple主题原配置
-  // ==============================
+
+  /*
+   * ==============================
+   * Simple主题配置
+   * ==============================
+   */
 
 
   ${themeConsoleStyle('simple', CONFIG)}
