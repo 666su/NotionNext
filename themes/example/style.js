@@ -25,12 +25,13 @@ const Style = () => {
 
 
 
+
     /*
      * ==============================
-     * 文章标题
+     * 文章标题居中
      * ==============================
      *
-     * HTML:
+     * Example主题:
      *
      * <div class="px-6 py-4 mb-4 border-b">
      *     <h1 class="text-2xl font-semibold">
@@ -44,8 +45,6 @@ const Style = () => {
 
         text-indent: 0 !important;
 
-        width: 100% !important;
-
     }
 
 
@@ -54,17 +53,16 @@ const Style = () => {
 
     /*
      * ==============================
-     * 正文首行缩进
+     * 普通正文首行缩进
      * ==============================
      *
-     * HTML:
-     *
-     * <div class="notion-text">
+     * 只影响文章正文
+     * 不影响Callout
      *
      */
 
 
-    #theme-example .notion-text {
+    #theme-example .notion-page-content > .notion-text {
 
         text-indent: 2em !important;
 
@@ -78,15 +76,12 @@ const Style = () => {
 
     /*
      * ==============================
-     * 特殊内容取消缩进
+     * Callout取消缩进
      * ==============================
      */
 
 
-    #theme-example .notion-callout,
-    #theme-example .notion-code,
-    #theme-example .notion-list,
-    #theme-example .notion-quote {
+    #theme-example .notion-callout .notion-text {
 
         text-indent: 0 !important;
 
@@ -98,12 +93,46 @@ const Style = () => {
 
     /*
      * ==============================
-     * 图片说明取消缩进
+     * 列表取消缩进
      * ==============================
      */
 
 
-    #theme-example .notion-image {
+    #theme-example .notion-list .notion-text {
+
+        text-indent: 0 !important;
+
+    }
+
+
+
+
+
+    /*
+     * ==============================
+     * 引用取消缩进
+     * ==============================
+     */
+
+
+    #theme-example .notion-quote .notion-text {
+
+        text-indent: 0 !important;
+
+    }
+
+
+
+
+
+    /*
+     * ==============================
+     * 代码块取消缩进
+     * ==============================
+     */
+
+
+    #theme-example .notion-code .notion-text {
 
         text-indent: 0 !important;
 
