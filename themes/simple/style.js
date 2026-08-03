@@ -1,223 +1,211 @@
-import { css } from '@emotion/react'
+/* eslint-disable react/no-unknown-property */
+import CONFIG from './config'
+import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
 
-export const Style = () => {
-  return (
-    <style jsx global>{`
+/**
+ * 此处样式只对当前主题生效
+ * 此处不支持tailwindCSS的 @apply 语法
+ * @returns
+ */
+const Style = () => {
+  return <style jsx global>{`
 
-      /*
-       * ==============================
-       * Simple Theme Custom Style
-       * ==============================
-       */
+  /*
+   * ============================
+   * 基础设置
+   * ============================
+   */
 
 
-      /*
-       * 页面主体
-       */
-      #theme-simple {
+  // 底色
+  .dark body{
+      background-color: black;
+  }
 
-      }
 
+  // 文本不可选取
+  .forbid-copy {
+      user-select: none;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+  }
 
-      /*
-       * Notion内容区域
-       */
-      #theme-simple .notion {
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-      }
 
 
+  #theme-simple #announcement-content {
+    /* background-color: #f6f6f6; */
+  }
 
-      /*
-       * ==============================
-       * 文章标题
-       * ==============================
-       */
 
 
-      /*
-       * 一级文章标题
-       * NotionNext中文章标题实际渲染为 notion-h1
-       */
-      #theme-simple .notion-h1 {
+  #theme-simple .blog-item-title {
+    color: #276077;
+  }
 
-        /*
-         * 标题居中
-         */
-        text-align: center;
 
-        /*
-         * 防止正文缩进影响标题
-         */
-        text-indent: 0;
+  .dark #theme-simple .blog-item-title {
+    color: #d1d5db;
+  }
 
-        /*
-         * 标题间距
-         */
-        margin-bottom: 1.5rem;
 
-      }
 
+  .notion {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
 
 
-      /*
-       * 所有标题取消缩进保护
-       */
-      #theme-simple .notion-h {
 
-        text-indent: 0;
 
-      }
+  /*
+   * ============================
+   * 文章标题
+   * ============================
+   */
 
 
+  /*
+   * NotionNext Simple文章标题
+   * h1实际class:
+   * notion-h notion-h1
+   */
+  #theme-simple .notion-h1 {
 
-      /*
-       * ==============================
-       * 正文排版
-       * ==============================
-       */
+      text-align: center !important;
 
+      text-indent: 0 !important;
 
-      /*
-       * 正文首行缩进
-       */
-      #theme-simple .notion-text {
+  }
 
-        text-indent: 2em;
 
-        line-height: 1.8;
 
-      }
+  /*
+   * 所有标题禁止缩进
+   */
+  #theme-simple .notion-h {
 
+      text-indent: 0 !important;
 
+  }
 
-      /*
-       * 英文数字保持正常
-       */
-      #theme-simple .notion-text code {
 
-        text-indent: 0;
 
-      }
 
+  /*
+   * ============================
+   * 正文排版
+   * ============================
+   */
 
 
-      /*
-       * ==============================
-       * 特殊模块取消缩进
-       * ==============================
-       */
+  /*
+   * 正文首行缩进
+   *
+   * 注意：
+   * 不使用 .notion p
+   * 避免影响标题
+   */
+  #theme-simple .notion-text {
 
+      text-indent: 2em;
 
-      /*
-       * Callout提示块
-       */
-      #theme-simple .notion-callout {
+      line-height: 1.8;
 
-        text-indent: 0;
+  }
 
-      }
 
 
 
-      /*
-       * 列表
-       */
-      #theme-simple .notion-list {
+  /*
+   * ============================
+   * 特殊内容取消缩进
+   * ============================
+   */
 
-        text-indent: 0;
 
-      }
+  // Callout
+  #theme-simple .notion-callout {
 
+      text-indent: 0;
 
+  }
 
-      /*
-       * 引用块
-       */
-      #theme-simple .notion-quote {
 
-        text-indent: 0;
 
-      }
+  // 列表
+  #theme-simple .notion-list {
 
+      text-indent: 0;
 
+  }
 
-      /*
-       * 代码块
-       */
-      #theme-simple .notion-code {
 
-        text-indent: 0;
 
-      }
+  // 引用
+  #theme-simple .notion-quote {
 
+      text-indent: 0;
 
+  }
 
-      /*
-       * 图片说明
-       */
-      #theme-simple .notion-image {
 
-        text-indent: 0;
 
-      }
+  // 代码块
+  #theme-simple .notion-code {
 
+      text-indent: 0;
 
+  }
 
-      /*
-       * ==============================
-       * 正文宽度优化
-       * ==============================
-       */
 
 
-      #theme-simple .notion-page-content {
+  /*
+   * ============================
+   * 菜单下划线动画
+   * ============================
+   */
 
-        line-height: 1.8;
 
-      }
+  #theme-simple .menu-link {
 
+      text-decoration: none;
 
+      background-image: linear-gradient(#dd3333, #dd3333);
 
-      /*
-       * 段落之间距离
-       */
-      #theme-simple .notion-text + .notion-text {
+      background-repeat: no-repeat;
 
-        margin-top: 1rem;
+      background-position: bottom center;
 
-      }
+      background-size: 0 2px;
 
+      transition: background-size 100ms ease-in-out;
 
+  }
 
-      /*
-       * ==============================
-       * 移动端适配
-       * ==============================
-       */
 
-      @media (max-width: 640px) {
 
+  #theme-simple .menu-link:hover {
 
-        #theme-simple .notion-h1 {
+      background-size: 100% 2px;
 
-          text-align: left;
+      color: #dd3333;
 
-        }
+      cursor: pointer;
 
+  }
 
-        #theme-simple .notion-text {
 
-          text-indent: 2em;
 
-        }
+  /*
+   * ============================
+   * Simple主题配置
+   * ============================
+   */
 
+  ${themeConsoleStyle('simple', CONFIG)}
 
-      }
 
-
-
-    `}</style>
-  )
+  `}</style>
 }
+
+export { Style }
