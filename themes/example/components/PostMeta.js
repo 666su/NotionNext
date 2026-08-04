@@ -7,6 +7,7 @@ import SmartLink from '@/components/SmartLink'
  */
 export const PostMeta = props => {
   const { post } = props
+  console.log('POST DATA:', post)
   const { locale } = useGlobal()
 
   return (
