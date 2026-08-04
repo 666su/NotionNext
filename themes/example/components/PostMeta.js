@@ -35,8 +35,10 @@ export const PostMeta = props => {
             {
               post?.tagItems?.length > 0 && (
                 <>
+
                   {
                     post.tagItems.map((tag, index) => (
+
                       <span key={tag.name}>
 
                         <SmartLink
@@ -47,15 +49,19 @@ export const PostMeta = props => {
                           {tag.name}
                         </SmartLink>
 
+
                         {
                           index !== post.tagItems.length - 1 && '、'
                         }
 
                       </span>
+
                     ))
                   }
 
+
                   <span className='mr-2'>|</span>
+
                 </>
               )
             }
@@ -86,8 +92,11 @@ export const PostMeta = props => {
             {/* 阅读量 */}
             <span className='hidden busuanzi_container_page_pv font-light mr-2'>
               <i className='mr-1 fas fa-eye' />
+
               &nbsp;
+
               <span className='mr-2 busuanzi_value_page_pv' />
+
             </span>
 
 
