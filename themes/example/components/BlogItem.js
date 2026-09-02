@@ -110,7 +110,7 @@ const BlogItem = ({ post }) => {
           <SmartLink href={post?.href} passHref legacyBehavior>
             <LazyImage
               src={post?.pageCoverThumbnail}
-              className='w-full bg-cover hover:scale-110 duration-200'
+              className='w-full h-full object-cover hover:scale-110 duration-200'
             />
           </SmartLink>
         </div>
