@@ -21,6 +21,7 @@ import { PostMeta } from './components/PostMeta'
 import SearchInput from './components/SearchInput'
 import TitleBar from './components/TitleBar'
 import Announcement from './components/Announcement'
+import NoticeTimeline from './components/NoticeTimeline'
 import { SeriesPanel } from './components/SeriesPanel'
 import CONFIG from './config'
 import { Style } from './style'
@@ -86,9 +87,6 @@ const LayoutBase = props => {
           {/* 内容 */}
           <div
             className={`${fullWidth ? '' : contentMaxWidth} w-full xl:px-14 lg:px-4 transition-all duration-300`}>
-            {/* 新增：顶部公告横幅（可叉掉，宽度自适应） */}
-            <Announcement post={props.notice} columns={seriesColumns} />
-
             <Transition
               show={!onLoading}
               appear={true}
@@ -196,10 +194,21 @@ const LayoutSlug = props => {
       )
     }
   }, [post])
+
+  // 新增公告时间线功能：公告页只展示时间线内容
+  const isNotice = post?.type === 'Notice'
+
   return (
     <>
       {lock ? (
         <PostLock validPassword={validPassword} />
+      ) : isNotice ? (
+        // 公告页：不显示分类/标签/分享/评论，并预留底部空间避免页脚上浮
+        <div className='min-h-[60vh]'>
+          <div id='article-wrapper'>
+            <NoticeTimeline post={post} />
+          </div>
+        </div>
       ) : post && (
         <div>
           <PostMeta post={post} />

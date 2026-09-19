@@ -3,6 +3,7 @@ import SmartLink from '@/components/SmartLink'
 import { MenuList } from './MenuList'
 import { MobileDrawer } from './MobileDrawer'
 import { SettingsDropdown } from './SettingsDropdown'
+import Announcement from './Announcement'
 
 /**
  * 页头导航栏
@@ -61,6 +62,9 @@ export const Header = props => {
 
             {/* 功能区 */}
             <div className='flex items-center gap-2 md:gap-3 shrink-0'>
+
+              {/* 公告图标：点击跳转到公告文章页 */}
+              <Announcement post={props.notice} />
 
               {/* 搜索：桌面端完整搜索框 */}
               <SmartLink

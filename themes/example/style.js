@@ -615,6 +615,194 @@ const Style = () => {
     }
 
 
+    /* 新增公告时间线功能 */
+    #theme-example .notice-timeline {
+        position: relative;
+        padding: 0.25rem 0;
+    }
+
+    #theme-example .notice-timeline-item {
+        position: relative;
+        display: flex;
+        gap: 0.9rem;
+        padding-bottom: 1.6rem;
+    }
+
+    #theme-example .notice-timeline-item:last-child {
+        padding-bottom: 0;
+    }
+
+    /* 左侧竖轴 */
+    #theme-example .notice-timeline-rail {
+        position: relative;
+        flex: 0 0 auto;
+        width: 14px;
+        display: flex;
+        justify-content: center;
+    }
+
+    #theme-example .notice-timeline-rail::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        top: 18px;
+        bottom: -1.6rem;
+        width: 2px;
+        border-radius: 2px;
+        background: linear-gradient(180deg, #e5e7eb, #f3f4f6);
+    }
+
+    #theme-example .notice-timeline-item:last-child .notice-timeline-rail::before {
+        display: none;
+    }
+
+    /* 时间线圆点 */
+    #theme-example .notice-timeline-dot {
+        position: relative;
+        z-index: 1;
+        width: 11px;
+        height: 11px;
+        margin-top: 7px;
+        border-radius: 9999px;
+        background: #ffffff;
+        border: 2px solid #d1d5db;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+    }
+
+    #theme-example .notice-timeline-dot.is-latest {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.16);
+    }
+
+    /* 右侧内容区 */
+    #theme-example .notice-timeline-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding-bottom: 0.25rem;
+    }
+
+    #theme-example .notice-timeline-head {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.45rem;
+    }
+
+    #theme-example .notice-timeline-cal {
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
+
+    #theme-example .notice-timeline-date {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #374151;
+        letter-spacing: 0.01em;
+    }
+
+    #theme-example .notice-timeline-item:first-child .notice-timeline-date {
+        color: #2563eb;
+    }
+
+    /* 相对日期标签 */
+    #theme-example .notice-timeline-badge {
+        display: inline-flex;
+        align-items: center;
+        height: 20px;
+        padding: 0 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        font-weight: 500;
+        line-height: 1;
+        color: #6b7280;
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+    }
+
+    #theme-example .notice-timeline-badge.is-new {
+        color: #2563eb;
+        background: #eff6ff;
+        border-color: #bfdbfe;
+    }
+
+    /* 内容行 */
+    #theme-example .notice-timeline-lines {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    #theme-example .notice-timeline-line {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.7;
+        color: #4b5563;
+        word-break: break-word;
+    }
+
+    /* 深色模式 */
+    .dark #theme-example .notice-timeline-rail::before {
+        background: linear-gradient(180deg, #374151, #1f2937);
+    }
+
+    .dark #theme-example .notice-timeline-dot {
+        background: #111827;
+        border-color: #4b5563;
+    }
+
+    .dark #theme-example .notice-timeline-dot.is-latest {
+        background: #3b82f6;
+        border-color: #3b82f6;
+    }
+
+    .dark #theme-example .notice-timeline-date {
+        color: #e5e7eb;
+    }
+
+    .dark #theme-example .notice-timeline-item:first-child .notice-timeline-date {
+        color: #60a5fa;
+    }
+
+    .dark #theme-example .notice-timeline-badge {
+        color: #9ca3af;
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .dark #theme-example .notice-timeline-badge.is-new {
+        color: #60a5fa;
+        background: rgba(37, 99, 235, 0.15);
+        border-color: rgba(96, 165, 250, 0.35);
+    }
+
+    .dark #theme-example .notice-timeline-line {
+        color: #d1d5db;
+    }
+
+    /* 移动端适配 */
+    @media (max-width: 768px) {
+        #theme-example .notice-timeline-item {
+            gap: 0.7rem;
+            padding-bottom: 1.25rem;
+        }
+
+        #theme-example .notice-timeline-rail::before {
+            bottom: -1.25rem;
+        }
+
+        #theme-example .notice-timeline-date {
+            font-size: 0.9rem;
+        }
+
+        #theme-example .notice-timeline-line {
+            font-size: 0.9rem;
+        }
+    }
+
 ${themeConsoleStyle('example', CONFIG)}
 
 
