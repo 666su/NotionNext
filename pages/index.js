@@ -131,6 +131,13 @@ export async function getStaticProps(req) {
   props.latestPosts = cleanPostSummaries(props.latestPosts)
   delete props.allPages
 
+  // [DEBUG] 临时调试：确认传给前端的 posts 是否包含 series
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[DEBUG-INDEX] posts passed to frontend:', JSON.stringify(
+      props.posts?.map(p => ({ title: p.title, series: p.series, number: p.number }))
+    ))
+  }
+
   return {
     props,
     revalidate: process.env.EXPORT

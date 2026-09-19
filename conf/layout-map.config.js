@@ -11,6 +11,8 @@ module.exports = {
     '/page/[page]': 'LayoutPostList',
     '/category/[category]': 'LayoutPostList',
     '/category/[category]/page/[page]': 'LayoutPostList',
+    // 新增文章系列展示功能
+    '/series/[series]': 'LayoutPostList',
     '/tag/[tag]': 'LayoutPostList',
     '/tag/[tag]/page/[page]': 'LayoutPostList',
     '/search': 'LayoutSearch',

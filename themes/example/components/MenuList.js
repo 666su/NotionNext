@@ -5,8 +5,9 @@ import { MenuItemDrop } from './MenuItemDrop'
 
 /**
  * 导航菜单列表
- * @param {*} props
- * @returns
+ * 新增移动端适配：
+ * - 移动端水平滚动（不折行），隐藏滚动条
+ * - 桌面端保持原有布局
  */
 export const MenuList = props => {
   const { customNav, customMenu } = props
@@ -57,16 +58,13 @@ export const MenuList = props => {
   }
 
   return (
-    <nav className='w-full bg-white md:pt-0 px-6 relative z-20 border-t border-b border-gray-light dark:border-hexo-black-gray dark:bg-black'>
-      <div className='mx-auto max-w-4xl md:flex justify-between items-center text-sm md:text-md md:justify-start'>
-        <ul className='w-full text-center md:text-left flex flex-wrap justify-center items-stretch md:justify-start md:items-start'>
+    <nav className='w-full bg-transparent px-0 relative z-20'>
+      <div className='mx-auto max-w-6xl md:flex justify-between items-center text-sm md:text-md md:justify-start overflow-x-auto menu-scroll-hide'>
+        <ul className='flex flex-nowrap md:flex-wrap justify-start items-stretch md:items-start gap-1 md:gap-0 whitespace-nowrap'>
           {links.map((link, index) => (
             <MenuItemDrop key={index} link={link} />
           ))}
         </ul>
-        {/* <div className="w-full md:w-1/3 text-center md:text-right"> */}
-        {/* <!-- extra links --> */}
-        {/* </div> */}
       </div>
     </nav>
   )

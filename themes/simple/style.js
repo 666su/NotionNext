@@ -3,8 +3,8 @@ import CONFIG from './config'
 import { themeConsoleStyle } from '@/lib/themeConsoleStyle'
 
 /**
- * 此处样式只对当前主题生效
- * 此处不支持tailwindCSS的 @apply 语法
+ * 姝ゅ鏍峰紡鍙褰撳墠涓婚鐢熸晥
+ * 姝ゅ涓嶆敮鎸乼ailwindCSS鐨?@apply 璇硶
  * @returns
  */
 const Style = () => {
@@ -12,18 +12,18 @@ const Style = () => {
 
   /*
    * ==============================
-   * 基础设置
+   * 鍩虹璁剧疆
    * ==============================
    */
 
 
-  // 底色
+  // 搴曡壊
   .dark body{
       background-color: black;
   }
 
 
-  // 文本不可选取
+  // 鏂囨湰涓嶅彲閫夊彇
   .forbid-copy {
       user-select: none;
       -webkit-user-select: none;
@@ -67,13 +67,13 @@ const Style = () => {
 
   /*
    * ==============================
-   * 文章标题
+   * 鏂囩珷鏍囬
    * ==============================
    */
 
 
   /*
-   * Simple主题文章标题
+   * Simple涓婚鏂囩珷鏍囬
    *
    * HTML:
    *
@@ -97,7 +97,7 @@ const Style = () => {
 
 
   /*
-   * 防止标题图标影响居中
+   * 闃叉鏍囬鍥炬爣褰卞搷灞呬腑
    */
 
   #theme-simple .px-6.py-4.mb-4.border-b h1 img {
@@ -114,13 +114,13 @@ const Style = () => {
 
   /*
    * ==============================
-   * 正文排版
+   * 姝ｆ枃鎺掔増
    * ==============================
    */
 
 
   /*
-   * Notion正文:
+   * Notion姝ｆ枃:
    *
    * <div class="notion-text">
    *
@@ -140,7 +140,7 @@ const Style = () => {
 
   /*
    * ==============================
-   * 特殊模块取消缩进
+   * 鐗规畩妯″潡鍙栨秷缂╄繘
    * ==============================
    */
 
@@ -181,7 +181,7 @@ const Style = () => {
 
   /*
    * ==============================
-   * 菜单下划线动画
+   * 鑿滃崟涓嬪垝绾垮姩鐢?
    * ==============================
    */
 
@@ -220,12 +220,147 @@ const Style = () => {
 
   /*
    * ==============================
-   * Simple主题配置
+   * Simple涓婚閰嶇疆
    * ==============================
    */
 
 
-  ${themeConsoleStyle('simple', CONFIG)}
+  
+  /*
+    * ==============================
+    * 新增文章系列展示功能 - 系列分组样式
+    * ==============================
+    */
+
+
+  #theme-simple .series-group {
+
+      padding: 0.5rem;
+
+  }
+
+
+
+  #theme-simple .series-group-header {
+
+      position: relative;
+
+  }
+
+
+
+  #theme-simple .series-card {
+
+      height: 100%;
+
+  }
+
+
+
+  /* 一列模式：大卡片，显示封面 */
+  #theme-simple .series-card-large .series-card {
+
+      border-radius: 0.75rem;
+
+  }
+
+
+
+  /* 两列模式：中等卡片 */
+  #theme-simple .series-card-medium .series-card {
+
+      border-radius: 0.5rem;
+
+  }
+
+
+
+  /* 三列模式：小卡片 */
+  #theme-simple .series-card-small .series-card {
+
+      border-radius: 0.375rem;
+
+  }
+
+
+
+  /* 新增文章系列展示功能：编号徽章内图标与数字严格水平对齐 */
+  #theme-simple .series-badge {
+
+      vertical-align: middle;
+
+      line-height: 1;
+
+  }
+
+
+
+  #theme-simple .series-badge i {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      line-height: 1;
+
+      font-size: 0.9em;
+
+      position: relative;
+
+      top: -0.5px;
+
+  }
+
+
+
+  #theme-simple .series-badge span {
+
+      line-height: 1;
+
+  }
+
+
+
+  /* 移动端适配：强制单列 */
+  @media (max-width: 640px) {
+
+      #theme-simple .series-grid {
+
+          grid-template-columns: 1fr !important;
+
+      }
+
+  }
+
+
+
+  /*
+    * ==============================
+    * 新增文章系列展示功能 - 布局切换按钮
+    * ==============================
+    */
+
+
+  #theme-simple .layout-switcher {
+
+      justify-content: flex-end;
+
+  }
+
+
+
+  #theme-simple .layout-switcher-btn:focus {
+
+      outline: 2px solid #3b82f6;
+
+      outline-offset: 1px;
+
+  }
+
+
+${themeConsoleStyle('simple', CONFIG)}
 
 
   `}</style>

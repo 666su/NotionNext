@@ -6,7 +6,7 @@ import { useGlobal } from '@/lib/global'
  * @returns
  */
 export default function BlogPostBar(props) {
-  const { tag, category } = props
+  const { tag, category, series } = props
   const { locale } = useGlobal()
 
   if (tag) {
@@ -21,6 +21,14 @@ export default function BlogPostBar(props) {
       <div className='flex items-center text-xl py-2'>
         <i className='mr-2 fas fa-th' />
         {locale.COMMON.CATEGORY}: {category}
+      </div>
+    )
+    // 新增文章系列展示功能：系列页标题
+  } else if (series) {
+    return (
+      <div className='flex items-center text-xl py-2'>
+        <i className='mr-2 fas fa-layer-group' />
+        系列: {series}
       </div>
     )
   } else {

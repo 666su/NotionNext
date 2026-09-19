@@ -10,7 +10,7 @@ import { isBrowser } from '@/lib/utils'
 import { Transition } from '@headlessui/react'
 import SmartLink from '@/components/SmartLink'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
+import { useEffect, useState, createContext, useContext } from 'react'
 import BlogListArchive from './components/BlogListArchive'
 import { BlogListPage } from './components/BlogListPage'
 import { BlogListScroll } from './components/BlogListScroll'
@@ -19,10 +19,15 @@ import { Header } from './components/Header'
 import { PostLock } from './components/PostLock'
 import { PostMeta } from './components/PostMeta'
 import SearchInput from './components/SearchInput'
-import { SideBar } from './components/SideBar'
 import TitleBar from './components/TitleBar'
+import Announcement from './components/Announcement'
+import { SeriesPanel } from './components/SeriesPanel'
 import CONFIG from './config'
 import { Style } from './style'
+
+// 新增文章系列展示功能：列数 Context，让 LayoutBase 能根据列数调整页面宽度
+const SeriesColumnsContext = createContext({ columns: 1, setColumns: () => {} })
+export const useSeriesColumns = () => useContext(SeriesColumnsContext)
 
 /**
  * 基础布局框架
@@ -35,6 +40,15 @@ const LayoutBase = props => {
   const { children, post } = props
   const { onLoading, fullWidth, locale } = useGlobal()
 
+  // 新增文章系列展示功能：列数状态，控制页面内容区宽度
+  const [seriesColumns, setSeriesColumns] = useState(1)
+  const columnsCtx = { columns: seriesColumns, setColumns: setSeriesColumns }
+
+  // 根据列数决定内容区最大宽度
+  // 一列 = max-w-4xl (原始)，两列 = max-w-5xl，三列 = 全宽
+  const contentMaxWidth =
+    seriesColumns === 3 ? 'max-w-none' : seriesColumns === 2 ? 'max-w-5xl' : 'max-w-4xl'
+
   // 文章详情页左右布局改为上下布局
   const LAYOUT_VERTICAL =
     post && siteConfig('EXAMPLE_ARTICLE_LAYOUT_VERTICAL', false, CONFIG)
@@ -43,6 +57,7 @@ const LayoutBase = props => {
   const LAYOUT_SIDEBAR_REVERSE = siteConfig('LAYOUT_SIDEBAR_REVERSE', false)
 
   return (
+    <SeriesColumnsContext.Provider value={columnsCtx}>
     <div
       id='theme-example'
       className={`${siteConfig('FONT_STYLE')} dark:text-gray-300  bg-white dark:bg-black scroll-smooth`}>
@@ -61,9 +76,19 @@ const LayoutBase = props => {
           ${LAYOUT_SIDEBAR_REVERSE ? 'flex-row-reverse' : ''} 
           ${LAYOUT_VERTICAL ? 'items-center flex-col' : 'items-start'} 
           `}>
+          {/* 新增文章系列展示功能：右侧系列面板（时间线+日历），DOM第一 → flex-row-reverse下显示在最右 */}
+          {!fullWidth && !post && props.posts && props.posts.length > 0 && (
+            <div className='hidden lg:block w-56 xl:w-64 flex-shrink-0 sticky top-20'>
+              <SeriesPanel posts={props.posts} />
+            </div>
+          )}
+
           {/* 内容 */}
           <div
-            className={`${fullWidth ? '' : LAYOUT_VERTICAL ? 'max-w-5xl' : 'max-w-4xl'} w-full xl:px-14 lg:px-4`}>
+            className={`${fullWidth ? '' : contentMaxWidth} w-full xl:px-14 lg:px-4 transition-all duration-300`}>
+            {/* 新增：顶部公告横幅（可叉掉，宽度自适应） */}
+            <Announcement post={props.notice} columns={seriesColumns} />
+
             <Transition
               show={!onLoading}
               appear={true}
@@ -79,18 +104,6 @@ const LayoutBase = props => {
               {children}
             </Transition>
           </div>
-
-          {/* 侧边栏 */}
-          {!fullWidth && (
-            <div
-              className={`${
-                LAYOUT_VERTICAL
-                  ? 'flex space-x-0 md:space-x-2 md:flex-row flex-col w-full max-w-5xl justify-center xl:px-14 lg:px-4'
-                  : 'md:w-72 sticky top-20'
-              }`}>
-              <SideBar {...props} />
-            </div>
-          )}
         </div>
       </div>
 
@@ -107,6 +120,7 @@ const LayoutBase = props => {
         </div>
       </div>
     </div>
+    </SeriesColumnsContext.Provider>
   )
 }
 
@@ -125,7 +139,7 @@ const LayoutIndex = props => {
  * @returns
  */
 const LayoutPostList = props => {
-  const { category, tag } = props
+  const { category, tag, series } = props
 
   return (
     <>
@@ -138,6 +152,13 @@ const LayoutPostList = props => {
       )}
       {/* 显示标签 */}
       {tag && <div className='pb-12'>#{tag}</div>}
+      {/* 新增文章系列展示功能：显示系列名称 */}
+      {series && (
+        <div className='pb-12'>
+          <i className='mr-1 fas fa-layer-group' />
+          {series}
+        </div>
+      )}
 
       {siteConfig('POST_LIST_STYLE') === 'page' ? (
         <BlogListPage {...props} />
