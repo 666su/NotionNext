@@ -122,10 +122,8 @@ export const Header = props => {
                 <i className='fas fa-search'></i>
               </SmartLink>
 
-              {/* 设置按钮：桌面端显示（字号+夜间模式+语言） */}
-              <div className='hidden md:block'>
-                <SettingsDropdown />
-              </div>
+              {/* 设置按钮：桌面端与移动端均显示（字号+夜间模式+语言） */}
+              <SettingsDropdown />
 
             </div>
 

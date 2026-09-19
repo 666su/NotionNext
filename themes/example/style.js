@@ -436,17 +436,25 @@ const Style = () => {
 
 
 
-    /* 新增文章系列展示功能：文字大小调节（桌面端 + 移动端通用） */
-    #theme-example #notion-article p,
+    /* 新增文章系列展示功能：文字大小调节（桌面端 + 移动端通用）
+       NotionNext 的基准字号定义在 .notion 上（16px），正文 .notion-text 继承它，
+       标题使用 em 相对单位，因此只需调整 .notion 基准字号即可全文等比缩放 */
+    #theme-example #notion-article,
+    #theme-example #notion-article .notion {
+        font-size: calc(16px * var(--article-font-scale, 1));
+    }
 
-    #theme-example #notion-article li,
+    /* 表格、引用、代码块等使用绝对像素的元素，同步跟随缩放 */
+    #theme-example #notion-article .notion-table,
+    #theme-example #notion-article .notion-table-view,
+    #theme-example #notion-article .notion-simple-table {
+        font-size: calc(14px * var(--article-font-scale, 1));
+    }
 
-    #theme-example #notion-article td,
-
-    #theme-example #notion-article th {
-
-        font-size: calc(1em * var(--article-font-scale, 1));
-
+    /* 代码块：Prism 样式用 !important 固定了字号，这里同步跟随缩放 */
+    #theme-example #notion-article .notion-code code,
+    #theme-example #notion-article .notion-code pre {
+        font-size: calc(14px * var(--article-font-scale, 1)) !important;
     }
 
 

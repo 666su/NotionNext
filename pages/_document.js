@@ -37,6 +37,19 @@ const darkModeScript = `
 })()
 `
 
+// 新增文章系列展示功能：预先应用已保存的字号，避免刷新时闪烁
+const fontScaleScript = `
+(function() {
+  try {
+    var scale = localStorage.getItem('desktop_font_scale') || localStorage.getItem('mobile_font_scale')
+    var n = parseFloat(scale)
+    if (n > 0) {
+      document.documentElement.style.setProperty('--article-font-scale', String(n))
+    }
+  } catch (e) {}
+})()
+`
+
 class MyDocument extends Document {
   static async getInitialProps(ctx) {
     const initialProps = await Document.getInitialProps(ctx)
@@ -104,6 +117,9 @@ class MyDocument extends Document {
 
           {/* 预先设置深色模式，避免闪烁 */}
           <script dangerouslySetInnerHTML={{ __html: darkModeScript }} />
+
+          {/* 预先应用文章字号，避免刷新时字号跳变 */}
+          <script dangerouslySetInnerHTML={{ __html: fontScaleScript }} />
         </Head>
 
         <body>

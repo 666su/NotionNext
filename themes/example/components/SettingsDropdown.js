@@ -18,27 +18,14 @@ export const SettingsDropdown = () => {
   const [isDark, setIsDark] = useState(false)
   const ref = useRef(null)
 
-  // 初始化
+  // 初始化：读取已保存的字号
   useEffect(() => {
     try {
       const saved = localStorage.getItem('desktop_font_scale')
-      if (saved) {
-        const scale = parseFloat(saved)
+      const scale = parseFloat(saved)
+      if (scale > 0) {
         setFontScale(scale)
         document.documentElement.style.setProperty('--article-font-scale', String(scale))
-        // 延迟应用（等 DOM 渲染完成）
-        setTimeout(() => {
-          const article = document.querySelector('#notion-article')
-          if (!article) return
-          const baseSize = 16 * scale
-          article.style.fontSize = `${baseSize}px`
-          article.querySelectorAll('p, li, td, th, blockquote').forEach(el => {
-            el.style.fontSize = `${baseSize}px`
-          })
-          article.querySelectorAll('h1').forEach(el => { el.style.fontSize = `${baseSize * 1.8}px` })
-          article.querySelectorAll('h2').forEach(el => { el.style.fontSize = `${baseSize * 1.5}px` })
-          article.querySelectorAll('h3').forEach(el => { el.style.fontSize = `${baseSize * 1.25}px` })
-        }, 100)
       }
     } catch (e) {}
     setIsDark(document.documentElement.classList.contains('dark'))
@@ -55,34 +42,14 @@ export const SettingsDropdown = () => {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // 应用字号：直接操作 DOM 所有文本元素（最可靠）
+  // 应用字号：只设置 CSS 变量，由样式表对全文等比缩放
+  // （NotionNext 正文继承 .notion 的基准字号，标题为 em 相对单位）
   const applyFontScale = (scale) => {
     setFontScale(scale)
     try {
       localStorage.setItem('desktop_font_scale', String(scale))
     } catch (e) {}
     document.documentElement.style.setProperty('--article-font-scale', String(scale))
-
-    const article = document.querySelector('#notion-article')
-    if (!article) return
-
-    // 设置容器基准字号
-    article.style.fontSize = `${16 * scale}px`
-
-    // 直接修改所有子元素的 fontSize（覆盖任何内联样式/CSS）
-    const baseSize = 16 * scale
-    const selectors = 'p, li, td, th, blockquote, h1, h2, h3, h4, h5, h6'
-    const elements = article.querySelectorAll(selectors)
-    elements.forEach(el => {
-      // 标题用相对比例，正文用绝对值
-      const tag = el.tagName.toLowerCase()
-      if (tag === 'h1') el.style.fontSize = `${baseSize * 1.8}px`
-      else if (tag === 'h2') el.style.fontSize = `${baseSize * 1.5}px`
-      else if (tag === 'h3') el.style.fontSize = `${baseSize * 1.25}px`
-      else if (tag === 'h4') el.style.fontSize = `${baseSize * 1.1}px`
-      else if (tag === 'h5' || tag === 'h6') el.style.fontSize = `${baseSize * 0.95}px`
-      else el.style.fontSize = `${baseSize}px`
-    })
   }
 
   // 切换夜间模式
