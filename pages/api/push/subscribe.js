@@ -1,27 +1,27 @@
 /**
- * 新增推送通知功能 - 订阅/取消订阅
- * POST /api/push/subscribe   — 保存订阅
- * DELETE /api/push/subscribe  — 取消订阅
+ * 新增推送通知功能 - 订阅管理
+ * POST /api/push/subscribe   — 新增/更新订阅
+ * DELETE /api/push/subscribe  — 删除订阅
  */
-import { addSubscription, removeSubscription } from '@/lib/notify/storage'
+import { upsertSubscription, removeSubscription } from '@/lib/notify/storage'
 
 export default async function handler(req, res) {
   try {
     if (req.method === 'POST') {
-      const sub = req.body
-      if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) {
-        return res.status(400).json({ error: '订阅信息不完整' })
+      const { subscriberId, channel, config, enabled } = req.body
+      if (!subscriberId || !channel) {
+        return res.status(400).json({ error: '缺少 subscriberId 或 channel' })
       }
-      await addSubscription(sub)
-      return res.status(200).json({ ok: true })
+      const sub = await upsertSubscription({ subscriberId, channel, config, enabled })
+      return res.status(200).json({ ok: true, id: sub.id })
     }
 
     if (req.method === 'DELETE') {
-      const { endpoint } = req.body || {}
-      if (!endpoint) {
-        return res.status(400).json({ error: '缺少 endpoint' })
+      const { subscriberId, channel } = req.body || {}
+      if (!subscriberId || !channel) {
+        return res.status(400).json({ error: '缺少 subscriberId 或 channel' })
       }
-      await removeSubscription(endpoint)
+      await removeSubscription(subscriberId, channel)
       return res.status(200).json({ ok: true })
     }
 

@@ -1,8 +1,9 @@
 /**
- * 新增推送通知功能 - 发送测试推送
- * POST /api/push/test  { subscription }
- * 向指定的订阅发送一条测试通知（设置面板"发送测试通知"按钮用）
+ * 新增推送通知功能 - 发送测试通知
+ * POST /api/push/test  { channel, config }
+ * 用读者自己填的配置发送测试，验证渠道是否可用
  */
+import { sendTelegram, sendServerChan } from '@/lib/notify/channels'
 import { sendWebPushTo } from '@/lib/notify/webpush'
 import { getVapidKeys, setVapidKeys } from '@/lib/notify/storage'
 import { generateVapidKeys } from '@/lib/notify/webpush'
@@ -13,30 +14,53 @@ export default async function handler(req, res) {
   }
 
   try {
-    const sub = req.body?.subscription
-    if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) {
-      return res.status(400).json({ error: '订阅信息不完整' })
+    const { channel, config } = req.body
+    if (!channel || !config) {
+      return res.status(400).json({ error: '缺少 channel 或 config' })
     }
 
-    // 获取或生成 VAPID 密钥
-    let keys = await getVapidKeys()
-    const envPk = process.env.VAPID_PUBLIC_KEY
-    const envSk = process.env.VAPID_PRIVATE_KEY
-    if (envPk && envSk) {
-      keys = { publicKey: envPk, privateKey: envSk }
-    } else if (!keys) {
-      keys = generateVapidKeys()
-      await setVapidKeys(keys)
-    }
-
-    const payload = {
+    const msg = {
       title: '🔔 测试通知',
-      body: '博客推送设置成功！你将收到新文章更新通知。',
-      url: '/'
+      url: process.env.NEXT_PUBLIC_LINK || '/',
+      summary: '博客推送设置成功！你将收到新文章更新通知。'
     }
 
-    await sendWebPushTo(sub, payload, keys, process.env.VAPID_SUBJECT)
-    return res.status(200).json({ ok: true, message: '测试通知已发送' })
+    if (channel === 'telegram') {
+      const result = await sendTelegram(msg, config)
+      return result.ok
+        ? res.status(200).json({ ok: true, message: '测试通知已发送' })
+        : res.status(400).json({ error: result.reason })
+    }
+
+    if (channel === 'serverchan') {
+      const result = await sendServerChan(msg, config)
+      return result.ok
+        ? res.status(200).json({ ok: true, message: '测试通知已发送' })
+        : res.status(400).json({ error: result.reason })
+    }
+
+    if (channel === 'webpush') {
+      // Web Push 测试需要完整的订阅信息
+      const { endpoint, keys } = config
+      if (!endpoint || !keys?.p256dh || !keys?.auth) {
+        return res.status(400).json({ error: 'Web Push 订阅信息不完整' })
+      }
+      let keys2 = await getVapidKeys()
+      const envPk = process.env.VAPID_PUBLIC_KEY
+      const envSk = process.env.VAPID_PRIVATE_KEY
+      if (envPk && envSk) keys2 = { publicKey: envPk, privateKey: envSk }
+      else if (!keys2) { keys2 = generateVapidKeys(); await setVapidKeys(keys2) }
+
+      await sendWebPushTo(
+        { endpoint, keys },
+        { title: msg.title, body: msg.summary, url: msg.url },
+        keys2,
+        process.env.VAPID_SUBJECT
+      )
+      return res.status(200).json({ ok: true, message: '测试通知已发送' })
+    }
+
+    return res.status(400).json({ error: `不支持的渠道: ${channel}` })
   } catch (e) {
     console.warn('[notify] 测试推送失败:', e.message)
     return res.status(500).json({ error: e.message })
