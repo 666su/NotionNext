@@ -63,6 +63,7 @@ const BLOG = {
   CAN_COPY: process.env.NEXT_PUBLIC_CAN_COPY || true, // 是否允许复制页面内容，默认允许；可被文章属性 CAN_COPY / ext.CAN_COPY 覆盖。
 
   ...require('./conf/techgrow.config'), // 公众号导流插件（TechGrow）
+  ...require('./conf/notify.config'), // 推送通知功能配置（Web Push / Telegram / Server酱 / Webhook）
 
   // 侧栏布局 是否反转(左变右,右变左) 已支持主题: hexo next medium fukasawa example
   LAYOUT_SIDEBAR_REVERSE:
