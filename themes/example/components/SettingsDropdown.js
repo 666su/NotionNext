@@ -264,7 +264,7 @@ export const SettingsDropdown = () => {
             onChange={e => updateChannel('serverchan', { config: { sendKey: e.target.value } })}
             className='w-full px-2 py-1 rounded text-xs border border-gray-200 dark:border-zinc-600 bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:border-blue-400'
           />
-          <div className=''>
+          <div className='flex gap-1'>
             <button onClick={() => saveChannelConfig('serverchan')} disabled={saving} className='flex-1 py-1 rounded text-[10px] font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50'>
               保存
             </button>
@@ -309,7 +309,7 @@ export const SettingsDropdown = () => {
           {/* 文字大小 */}
           <div className='px-4 pb-3'>
             <div className='text-xs font-semibold text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-wider'>文字大小</div>
-            <div className=''>
+            <div className='flex gap-1.5'>
               {FONT_SIZES.map(size => (
                 <button key={size.value} onClick={() => applyFontScale(size.value)} className={`flex-1 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                   Math.abs(fontScale - size.value) < 0.01
@@ -339,8 +339,8 @@ export const SettingsDropdown = () => {
 
           {/* 语言 */}
           <div className='px-4 py-3'>
-            <div className=''>语言</div>
-            <div className=''>
+            <div className='text-xs font-semibold text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-wider'>语言</div>
+            <div className='flex gap-1.5'>
               <a href='/' className='flex-1 py-1.5 rounded-md text-xs font-medium text-center bg-blue-500 text-white border border-blue-500'>中文</a>
               <a href='/en' className='flex-1 py-1.5 rounded-md text-xs font-medium text-center text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-zinc-600 hover:border-blue-300'>EN</a>
             </div>
