@@ -127,10 +127,33 @@ export const SettingsDropdown = () => {
       try {
         const reg = await navigator.serviceWorker.register('/sw.js')
         const { publicKey } = await (await fetch('/api/push/vapid-public-key')).json()
-        const sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(publicKey)
-        })
+        const serverKey = urlBase64ToUint8Array(publicKey)
+
+        let sub
+        try {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: serverKey
+          })
+        } catch (e) {
+          // VAPID 密钥更换后，浏览器拒绝用新密钥注册
+          // 需要先取消旧订阅，再用新密钥重新订阅
+          if (e.message && e.message.includes('different applicationServerKey')) {
+            const existingSub = await reg.pushManager.getSubscription()
+            if (existingSub) {
+              await existingSub.unsubscribe()
+              sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: serverKey
+              })
+            } else {
+              throw e
+            }
+          } else {
+            throw e
+          }
+        }
+
         const config = JSON.parse(JSON.stringify(sub))
         updateChannel('webpush', { config })
         await saveSubscription('webpush', config, true)
