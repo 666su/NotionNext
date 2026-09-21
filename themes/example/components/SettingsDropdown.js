@@ -54,7 +54,7 @@ export const SettingsDropdown = () => {
   })
   const [saving, setSaving] = useState(false)
   const [testResult, setTestResult] = useState({})
-  // 帮助弹窗：null | 'telegram' | 'serverchan' | 'webpush'
+  // 帮助展开：null | 'telegram' | 'serverchan' | 'webpush'
   const [helpChannel, setHelpChannel] = useState(null)
 
   // 初始化字号 + 暗色
@@ -361,7 +361,7 @@ export const SettingsDropdown = () => {
                     <span className='text-xs text-gray-700 dark:text-gray-200 flex items-center gap-1.5'>
                       <i className={`fas ${meta.icon} text-[10px] text-blue-400`}></i>
                       {meta.label}
-                      <button onClick={() => setHelpChannel(ch)} className='text-[10px] text-gray-400 hover:text-blue-400 transition-colors' title='配置指南'>
+                      <button onClick={() => setHelpChannel(prev => prev === ch ? null : ch)} className={`text-[10px] transition-colors ${helpChannel === ch ? 'text-blue-400' : 'text-gray-400 hover:text-blue-400'}`} title='配置指南'>
                         <i className='fas fa-circle-question'></i>
                       </button>
                     </span>
@@ -378,108 +378,35 @@ export const SettingsDropdown = () => {
                     </div>
                   )}
                   {renderChannelForm(ch)}
+                  {helpChannel === ch && (
+                    <div className='mt-2 pt-2 border-t border-gray-100 dark:border-zinc-700 text-[10px] text-gray-500 dark:text-gray-400 space-y-1.5 leading-relaxed'>
+                      {ch === 'telegram' && (
+                        <>
+                          <div><b className='text-gray-600 dark:text-gray-300'>① 创建机器人：</b>Telegram 搜索 @BotFather → 发送 /newbot → 取名字 → 收到 Token</div>
+                          <div><b className='text-gray-600 dark:text-gray-300'>② 获取 Chat ID：</b>给机器人发 /start → 浏览器打开 <code className='bg-gray-100 dark:bg-zinc-700 rounded px-1'>https://api.telegram.org/bot&lt;Token&gt;/getUpdates</code> → 找 <code className='bg-gray-100 dark:bg-zinc-700 rounded px-1'>{'{"chat":{"id":123}}'}</code></div>
+                          <div className='text-gray-400 dark:text-gray-500'>或搜索 @userinfobot 发 /start 也可获取 Chat ID</div>
+                        </>
+                      )}
+                      {ch === 'serverchan' && (
+                        <>
+                          <div><b className='text-gray-600 dark:text-gray-300'>① 注册：</b><a href='https://sct.ftqq.com' target='_blank' rel='noopener' className='text-blue-400 hover:underline'>sct.ftqq.com</a> 微信扫码登录</div>
+                          <div><b className='text-gray-600 dark:text-gray-300'>② 获取 SendKey：</b>登录后首页复制 SendKey（形如 SCTxxx）</div>
+                          <div className='text-gray-400 dark:text-gray-500'>通知推送到微信「服务通知」，需关注 Server酱推送 公众号</div>
+                        </>
+                      )}
+                      {ch === 'webpush' && (
+                        <>
+                          <div><b className='text-gray-600 dark:text-gray-300'>① 订阅：</b>打开开关 → 浏览器弹出授权 → 点「允许」</div>
+                          <div><b className='text-gray-600 dark:text-gray-300'>② 支持：</b>Chrome / Edge（手机+电脑），Firefox / Safari 不支持</div>
+                          <div className='text-gray-400 dark:text-gray-500'>手机 Chrome：菜单 → 设置 → 网站设置 → 通知 → 允许</div>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}
             <div className='text-[10px] text-gray-400 mt-1'>{subscriberId ? `订阅者ID: ${subscriberId.slice(0, 8)}…` : ''}</div>
-          </div>
-        </div>
-      )}
-
-      {/* 新增推送通知功能：帮助弹窗 */}
-      {helpChannel && (
-        <div className='fixed inset-0 z-[100] flex items-center justify-center p-4' onClick={() => setHelpChannel(null)}>
-          <div className='absolute inset-0 bg-black/50 backdrop-blur-sm'></div>
-          <div className='relative bg-white dark:bg-zinc-800 rounded-xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-y-auto p-5' onClick={e => e.stopPropagation()}>
-            <button onClick={() => setHelpChannel(null)} className='absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'>
-              <i className='fas fa-times'></i>
-            </button>
-            {helpChannel === 'telegram' && (
-              <div className='space-y-3'>
-                <div className='flex items-center gap-2 mb-1'>
-                  <i className='fas fa-paper-plane text-blue-500'></i>
-                  <h3 className='text-base font-semibold text-gray-800 dark:text-gray-100'>Telegram 通知配置指南</h3>
-                </div>
-                <div className='text-xs text-gray-600 dark:text-gray-300 space-y-2'>
-                  <div className='bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 space-y-1.5'>
-                    <div className='font-medium text-blue-700 dark:text-blue-300'>第 1 步：创建机器人</div>
-                    <ol className='list-decimal list-inside space-y-0.5 text-gray-600 dark:text-gray-300'>
-                      <li>在 Telegram 搜索 <b>@BotFather</b> 并点击开始</li>
-                      <li>发送 <code>/newbot</code>，按提示取个名字</li>
-                      <li>创建完成后会收到一段 <b>Token</b>，形如 <code>123456:ABC-DEF...</code></li>
-                      <li>复制这个 Token 填入下方「Bot Token」</li>
-                    </ol>
-                  </div>
-                  <div className='bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 space-y-1.5'>
-                    <div className='font-medium text-blue-700 dark:text-blue-300'>第 2 步：获取 Chat ID</div>
-                    <ol className='list-decimal list-inside space-y-0.5 text-gray-600 dark:text-gray-300'>
-                      <li>先给刚创建的机器人发送任意消息（或 <code>/start</code>）</li>
-                      <li>在浏览器打开 <code>https://api.telegram.org/bot&lt;你的Token&gt;/getUpdates</code></li>
-                      <li>在返回的 JSON 里找到 <code>{'{"chat":{"id":123456789}}'}</code></li>
-                      <li>复制这个 <b>Chat ID</b> 填入下方「Chat ID」</li>
-                    </ol>
-                    <div className='text-[10px] text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-700 rounded px-2 py-1 mt-1'>
-                      或者搜索 <b>@userinfobot</b> 发送 /start 也能获取自己的 Chat ID
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-            {helpChannel === 'serverchan' && (
-              <div className='space-y-3'>
-                <div className='flex items-center gap-2 mb-1'>
-                  <i className='fas fa-weixin text-green-500'></i>
-                  <h3 className='text-base font-semibold text-gray-800 dark:text-gray-100'>Server酱（微信）配置指南</h3>
-                </div>
-                <div className='text-xs text-gray-600 dark:text-gray-300 space-y-2'>
-                  <div className='bg-green-50 dark:bg-green-900/20 rounded-lg p-3 space-y-1.5'>
-                    <div className='font-medium text-green-700 dark:text-green-300'>第 1 步：注册账号</div>
-                    <ol className='list-decimal list-inside space-y-0.5 text-gray-600 dark:text-gray-300'>
-                      <li>打开 <a href='https://sct.ftqq.com' target='_blank' rel='noopener' className='text-blue-500 hover:underline'>https://sct.ftqq.com</a></li>
-                      <li>用微信扫码登录（免费）</li>
-                    </ol>
-                  </div>
-                  <div className='bg-green-50 dark:bg-green-900/20 rounded-lg p-3 space-y-1.5'>
-                    <div className='font-medium text-green-700 dark:text-green-300'>第 2 步：获取 SendKey</div>
-                    <ol className='list-decimal list-inside space-y-0.5 text-gray-600 dark:text-gray-300'>
-                      <li>登录后在首页可以看到 <b>SendKey</b>，形如 <code>SCTxxxxxxxx</code></li>
-                      <li>复制 SendKey 填入下方「SendKey」</li>
-                      <li>点击「测试」发送一条测试通知到微信</li>
-                    </ol>
-                  </div>
-                  <div className='text-[10px] text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-zinc-700 rounded px-2 py-1'>
-                    Server酱会将通知推送到你的微信「服务通知」，需关注 Server酱推送 公众号
-                  </div>
-                </div>
-              </div>
-            )}
-            {helpChannel === 'webpush' && (
-              <div className='space-y-3'>
-                <div className='flex items-center gap-2 mb-1'>
-                  <i className='fas fa-bell text-indigo-500'></i>
-                  <h3 className='text-base font-semibold text-gray-800 dark:text-gray-100'>浏览器推送指南</h3>
-                </div>
-                <div className='text-xs text-gray-600 dark:text-gray-300 space-y-2'>
-                  <div className='bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-3 space-y-1.5'>
-                    <div className='font-medium text-indigo-700 dark:text-indigo-300'>订阅步骤</div>
-                    <ol className='list-decimal list-inside space-y-0.5 text-gray-600 dark:text-gray-300'>
-                      <li>打开「浏览器推送」开关，浏览器会弹出授权请求</li>
-                      <li>点击「允许」即可订阅成功</li>
-                      <li>发布新文章时，手机/电脑会收到系统通知</li>
-                    </ol>
-                  </div>
-                  <div className='bg-gray-100 dark:bg-zinc-700 rounded-lg p-3 space-y-1'>
-                    <div className='font-medium text-gray-700 dark:text-gray-200'>注意事项</div>
-                    <ul className='list-disc list-inside space-y-0.5 text-gray-500 dark:text-gray-400'>
-                      <li>支持 Chrome / Edge 浏览器（手机和电脑）</li>
-                      <li>Firefox 和 Safari 暂不支持</li>
-                      <li>如果之前拒绝过授权，需在浏览器设置里重新允许</li>
-                      <li>手机 Chrome 设置路径：菜单 → 设置 → 网站设置 → 通知</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
