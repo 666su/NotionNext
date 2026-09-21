@@ -9,13 +9,20 @@ import BLOG from '@/blog.config'
 var tdStyle = { padding: 6, borderBottom: '1px solid #eee' }
 
 export default function NotifyStatusPage({ status }) {
-  var ok = status.redisConnected || !status.redisConfigured
+  var ok = status.redisConnected || (!status.redisConfigured && !status.isBuild)
+  var isBuilding = status.isBuild
   return (
     <div style={{ padding: '40px', fontFamily: 'monospace', maxWidth: 800, margin: '0 auto', fontSize: 14, lineHeight: 1.8 }}>
       <h2 style={{ borderBottom: '1px solid #ccc', paddingBottom: 10 }}>🔔 推送通知状态</h2>
       <p style={{ color: '#666', marginTop: 0 }}>
         访问路径：<code>/admin/notify-status</code>
       </p>
+
+      {isBuilding && (
+        <div style={{ background: '#fff3cd', padding: 15, borderRadius: 8, border: '1px solid #ffc107', marginBottom: 15 }}>
+          ⚠️ 构建中，Redis 状态将在部署后刷新时加载
+        </div>
+      )}
 
       <div style={{ background: ok ? '#f0fff0' : '#fff5f5', padding: 20, borderRadius: 8, border: '2px solid ' + (ok ? '#4caf50' : '#f44336') }}>
         <h3 style={{ margin: '0 0 10px' }}>{ok ? '✅ 运行正常' : '❌ 需要配置'}</h3>
@@ -53,6 +60,7 @@ export default function NotifyStatusPage({ status }) {
 }
 
 export async function getServerSideProps() {
+  var isBuild = !!process.env.BUILD_MODE
   var status = {
     storage: 'file',
     redisConfigured: !!process.env.REDIS_URL,
@@ -60,16 +68,19 @@ export async function getServerSideProps() {
     redisError: null,
     subscriptions: 0,
     vapidKeys: false,
-    isVercel: !!process.env.VERCEL
+    isVercel: !!process.env.VERCEL,
+    isBuild: isBuild
   }
 
-  if (status.redisConfigured) {
-    var redis = new Redis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: 1,
-      connectTimeout: 3000,
-      lazyConnect: true
-    })
+  // 构建时跳过 Redis 连接（避免 ERR_INVALID_URL）
+  if (status.redisConfigured && !isBuild) {
+    var redis = null
     try {
+      redis = new Redis(process.env.REDIS_URL, {
+        maxRetriesPerRequest: 1,
+        connectTimeout: 3000,
+        lazyConnect: true
+      })
       await redis.connect()
       await redis.ping()
       status.redisConnected = true
@@ -77,16 +88,19 @@ export async function getServerSideProps() {
     } catch (e) {
       status.redisError = e.message
     } finally {
-      redis.disconnect()
+      if (redis) redis.disconnect()
     }
   }
 
-  try {
-    var data = await readData()
-    status.subscriptions = data.subscriptions.length
-    status.vapidKeys = !!data.vapidKeys
-  } catch (e) {
-    status.readError = e.message
+  // 构建时跳过数据读取
+  if (!isBuild) {
+    try {
+      var data = await readData()
+      status.subscriptions = data.subscriptions.length
+      status.vapidKeys = !!data.vapidKeys
+    } catch (e) {
+      status.readError = e.message
+    }
   }
 
   return { props: { status: status } }
