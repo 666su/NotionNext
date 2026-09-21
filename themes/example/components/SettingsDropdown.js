@@ -129,30 +129,16 @@ export const SettingsDropdown = () => {
         const { publicKey } = await (await fetch('/api/push/vapid-public-key')).json()
         const serverKey = urlBase64ToUint8Array(publicKey)
 
-        let sub
-        try {
-          sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: serverKey
-          })
-        } catch (e) {
-          // VAPID 密钥更换后，浏览器拒绝用新密钥注册
-          // 需要先取消旧订阅，再用新密钥重新订阅
-          if (e.message && e.message.includes('different applicationServerKey')) {
-            const existingSub = await reg.pushManager.getSubscription()
-            if (existingSub) {
-              await existingSub.unsubscribe()
-              sub = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: serverKey
-              })
-            } else {
-              throw e
-            }
-          } else {
-            throw e
-          }
+        // 先取消旧订阅，确保用当前 VAPID 密钥重新创建
+        const existingSub = await reg.pushManager.getSubscription()
+        if (existingSub) {
+          await existingSub.unsubscribe()
         }
+
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: serverKey
+        })
 
         const config = JSON.parse(JSON.stringify(sub))
         updateChannel('webpush', { config })
@@ -168,6 +154,18 @@ export const SettingsDropdown = () => {
       updateChannel(ch, { status: '请填写配置后保存' })
     } else if (!enabled) {
       // 关闭渠道
+      if (ch === 'webpush') {
+        // 取消浏览器本地订阅，确保重新打开时用新密钥
+        try {
+          const reg = await navigator.serviceWorker.ready
+          const existingSub = await reg.pushManager.getSubscription()
+          if (existingSub) {
+            await existingSub.unsubscribe()
+          }
+        } catch (e) {
+          console.warn('[notify] 取消浏览器订阅失败:', e.message)
+        }
+      }
       await deleteSubscription(ch)
       updateChannel(ch, { status: '' })
     }
