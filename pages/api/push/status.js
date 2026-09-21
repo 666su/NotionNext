@@ -4,7 +4,6 @@
  *
  * 返回：存储后端（Redis/文件）、订阅数、VAPID 状态
  */
-import Redis from 'ioredis'
 import { readData } from '@/lib/notify/storage'
 
 export default async function handler(req, res) {
@@ -24,12 +23,14 @@ export default async function handler(req, res) {
 
   // 尝试连接 Redis
   if (result.redisConfigured) {
-    const redis = new Redis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: 1,
-      connectTimeout: 3000,
-      lazyConnect: true
-    })
+    let redis = null
     try {
+      const { default: Redis } = await import('ioredis')
+      redis = new Redis(process.env.REDIS_URL, {
+        maxRetriesPerRequest: 1,
+        connectTimeout: 3000,
+        lazyConnect: true
+      })
       await redis.connect()
       await redis.ping()
       result.redisConnected = true
@@ -37,7 +38,7 @@ export default async function handler(req, res) {
     } catch (e) {
       result.redisError = e.message
     } finally {
-      redis.disconnect()
+      if (redis) redis.disconnect()
     }
   }
 

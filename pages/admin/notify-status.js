@@ -2,7 +2,6 @@
  * 推送通知状态检查页面
  * /admin/notify-status
  */
-import Redis from 'ioredis'
 import { readData } from '@/lib/notify/storage'
 import BLOG from '@/blog.config'
 
@@ -76,6 +75,7 @@ export async function getServerSideProps() {
   if (status.redisConfigured && !isBuild) {
     var redis = null
     try {
+      var { default: Redis } = await import('ioredis')
       redis = new Redis(process.env.REDIS_URL, {
         maxRetriesPerRequest: 1,
         connectTimeout: 3000,
