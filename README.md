@@ -1,198 +1,176 @@
 <div align="center">
 
-<img src="https://github.com/user-attachments/assets/c111204d-2016-4343-92e4-83357cac4b19" width="96" height="96" alt="NotionNext Logo" />
+# 📝 666su's Blog
 
-# NotionNext
+**基于 NotionNext 的个性化博客**
 
-用 Notion 搭建自己的独立站
+[🌐 博客首页](https://blog.20240606.xyz) · [📋 定制说明](./README-NEXT.md)
 
-继续在 Notion 写作，一键发布为博客、作品集、知识库、导航站或产品官网。
-
-<p>
-  <a href="https://preview.tangly1024.com/">在线预览</a>
-  ·
-  <a href="https://notionnext.tangly1024.com/user-guide/start-here">开始搭建</a>
-  ·
-  <a href="https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG">主题全览</a>
-  ·
-  <a href="https://notionnext.tangly1024.com/user-guide/showcase">用户作品</a>
-  ·
-  <a href="https://notionnext.tangly1024.com/">文档站</a>
-  ·
-  <a href="https://github.com/notionnext-org/NotionNext/discussions">讨论区</a>
-</p>
-
-<p>
-  <a aria-label="GitHub commit activity" href="https://github.com/notionnext-org/NotionNext/commits/main" title="GitHub commit activity">
-    <img src="https://img.shields.io/github/commit-activity/m/notionnext-org/NotionNext?style=for-the-badge"/>
-  </a>
-  <a aria-label="GitHub contributors" href="https://github.com/notionnext-org/NotionNext/graphs/contributors" title="GitHub contributors">
-    <img src="https://img.shields.io/github/contributors/notionnext-org/NotionNext?color=orange&style=for-the-badge"/>
-  </a>
-  <a aria-label="Build status" href="#" title="Build status">
-    <img src="https://img.shields.io/github/deployments/notionnext-org/NotionNext/Production?logo=Vercel&style=for-the-badge"/>
-  </a>
-  <a aria-label="Powered by Vercel" href="https://vercel.com?utm_source=Craigary&utm_campaign=oss" title="Powered by Vercel">
-    <img src="https://www.datocms-assets.com/31049/1618983297-powered-by-vercel.svg" height="28"/>
-  </a>
-</p>
-
-中文 | [English](./README_EN.md)
+```
+Next.js 15 + Notion API + Vercel
+```
 
 </div>
 
 ---
 
-## NotionNext 是什么？
+## ✨ 核心特色
 
-NotionNext 是一个基于 **Next.js + Notion API** 的开源站点系统。你继续用 Notion 管理文章、分类、标签、菜单和页面，NotionNext 负责把这些内容发布成可访问、可搜索、可运营的独立网站。
+本博客基于 [NotionNext](https://github.com/tangly1024/NotionNext) 二次开发，在官方 example 主题基础上新增了多项功能：
 
-它适合想长期沉淀内容的人：内容创作者、独立开发者、设计师、摄影师、课程作者、开源项目维护者，以及需要快速搭建产品官网或知识库的小团队。
+### 🔔 推送通知系统
 
-## 你可以用它做什么？
+**官方 NotionNext 无此功能。** 全新实现的读者自选通知系统：
 
-| 目标 | 推荐入口 | 适合人群 |
-| --- | --- | --- |
-| 搭个人博客 | [从这里开始](https://notionnext.tangly1024.com/user-guide/start-here) | 内容创作者、独立开发者、学生 |
-| 做作品集或个人品牌站 | [按场景选主题](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG#按场景选主题) | 设计师、摄影师、自由职业者 |
-| 做产品官网或 SaaS 落地页 | [Starter / Landing / Proxio](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG#按场景选主题) | 创业者、独立产品、小团队 |
-| 做知识库或文档站 | [GitBook / Claude](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG#按场景选主题) | 开源项目、课程作者、团队文档 |
-| 做导航站或资源聚合 | [Nav 主题](https://notionnext.tangly1024.com/user-guide/themes/nav) | 资源整理者、社群运营者 |
+- **Web Push**：浏览器桌面通知，使用 VAPID + RFC 8291 原生实现（零依赖）
+- **Telegram**：通过 Bot API 推送，读者配置自己的 Bot Token + ChatID
+- **Server酱**：微信消息推送，读者配置自己的 SendKey
+- **存储**：Redis 持久化（Upstash）+ 文件回退，部署不丢失
+- **安全**：所有密钥由读者自己配置，不经过博主
 
-## 为什么选择 NotionNext？
+> 读者在设置面板自选通知方式，填入自己的密钥，即开即用。
 
-- **不换写作工具**：文章、分类、标签、封面、菜单仍在 Notion 中维护。
-- **上线路径短**：复制 Notion 模板、Fork 仓库、连接 Vercel，即可部署。
-- **主题选择多**：内置 26 个主题，覆盖博客、文档、作品集、官网、相册、导航站等场景。
-- **适合长期运营**：支持独立域名、SEO、Sitemap、RSS、评论、统计、搜索、广告和邮件订阅。
-- **开源可控**：源码、配置和主题都在自己的仓库里，后续可以继续二次开发。
-- **数据链路清晰**：Notion 负责内容沉淀，站点负责展示和分发，后续可迁移到 Markdown 或其他系统。
+### 🔠 文章字号调节
 
-## 20 分钟部署路线
+- 桌面端 / 移动端独立字号控制（12-24px）
+- 刷新页面不闪烁（`_document.js` 预加载脚本）
+- 基于 `.notion` 基准字号 CSS 变量缩放
 
-1. 打开 [主题预览站](https://preview.tangly1024.com/) 看最终效果。
-2. 复制 NotionNext 官方 Notion 模板。
-3. Fork 本仓库到自己的 GitHub 账号。
-4. 使用 [Vercel 部署 NotionNext](https://notionnext.tangly1024.com/user-guide/deploy-vercel)。
-5. 在环境变量中填写 Notion 页面 ID 等配置。
-6. 部署成功后，按场景选择主题并补齐域名、评论、统计、搜索等功能。
+### 📅 公告时间线
 
-新手建议直接从文档站的 [从这里开始](https://notionnext.tangly1024.com/user-guide/start-here) 阅读。
+- 公告页重构为日期时间线样式
+- 按日期分组，连接线展示
+- 导航栏公告图标一键跳转
 
-## 主题与预览
+### ⚙️ 部署优化
 
-- 在线切换主题：[preview.tangly1024.com](https://preview.tangly1024.com/)
-- 26 个内置主题：[主题全览](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG)
-- 仓库内主题文档：[docs/user-guide/themes/](./docs/user-guide/themes/)
+- Vercel `cleanUrls` + `trailingSlash: false`
+- 构建跳过规则 `[skip-version]`
+- ioredis 懒加载避免构建崩溃
 
-| 场景 | 优先看 |
-| --- | --- |
-| 个人博客 | `simple`、`hexo`、`nobelium`、`typography` |
-| 文档 / 知识库 | `gitbook`、`claude`、`thoughtlite` |
-| 作品集 / 个人品牌 | `opc`、`proxio`、`starter`、`landing` |
-| 产品官网 | `starter`、`landing`、`commerce` |
-| 图片 / 摄影 | `photo`、`plog`、`magzine` |
-| 导航站 | `nav` |
+---
 
-## 本地开发
+## 📊 与官方 NotionNext 的区别
 
-推荐使用 Node 22 和 Yarn 1。Node 20 已无法安装当前依赖（`@ai-sdk/google` 要求 Node >=22），部署平台也需要同步设置为 Node 22。
+| 功能 | 官方 example | 本博客 |
+|------|-------------|--------|
+| 推送通知 | ❌ 无 | ✅ Web Push / Telegram / Server酱 |
+| 字号调节 | ❌ 无 | ✅ 桌面/移动端独立 |
+| 公告样式 | 简单列表 | 日期时间线 |
+| 存储 | 无 | Redis + 文件回退 |
+| 部署 | 标准 | cleanUrls + 跳过规则 |
+
+📖 完整对比说明见 [README-NEXT.md](./README-NEXT.md)
+
+---
+
+## 🚀 快速开始
 
 ```bash
-# 1. 使用 Node 22
-nvm use || nvm install
+# 1. Fork 本仓库到 GitHub
+# 2. 部署到 Vercel
+# 3. 配置环境变量（.env.example 有完整说明）
 
-# 2. 安装 Yarn
+# 本地开发
+nvm use 22
 npm i -g yarn
-
-# 3. 安装依赖
 yarn
-
-# 4. 启动开发
 yarn dev
 ```
 
-常用命令：
+---
 
-| 命令 | 用途 |
-| --- | --- |
-| `yarn dev` | 启动本地开发 |
-| `yarn build` | 构建生产版本 |
-| `yarn export` | 静态导出 |
-| `yarn docs:site:dev` | 本地预览文档站 |
-| `yarn docs:site:build` | 构建文档站 |
+## 🔧 环境变量
 
-## 文档入口
+| 变量 | 必填 | 说明 |
+|------|------|------|
+| `NOTION_PAGE_ID` | ✅ | Notion 页面 ID |
+| `NEXT_PUBLIC_LINK` | ✅ | 博客链接 |
+| `NOTIFY_ENABLE` | ❌ | 推送总开关（默认 false） |
+| `REDIS_URL` | ❌ | Upstash Redis（推荐生产使用） |
+| `VAPID_PUBLIC_KEY` | ❌ | Web Push VAPID 公钥（留空自动生成） |
+| `VAPID_PRIVATE_KEY` | ❌ | Web Push VAPID 私钥 |
+| `NEXT_PUBLIC_THEME` | ❌ | 主题（默认 example） |
 
-自 2026 年起，NotionNext 使用仓库内 Markdown 文档作为主要教程来源，并发布为独立文档站。
+完整列表见 [`.env.example`](./.env.example)
 
-| 内容 | 链接 |
-| --- | --- |
-| 在线文档站 | [notionnext.tangly1024.com](https://notionnext.tangly1024.com) |
-| 新手入口 | [从这里开始](https://notionnext.tangly1024.com/user-guide/start-here) |
-| 场景模板 | [按目标选择模板](https://notionnext.tangly1024.com/user-guide/templates) |
-| 配置索引 | [全站功能与配置索引](https://notionnext.tangly1024.com/user-guide/reference/features) |
-| 主题说明 | [26 个主题说明](https://notionnext.tangly1024.com/user-guide/themes/THEMES_CATALOG) |
-| 用户作品 | [Showcase](https://notionnext.tangly1024.com/user-guide/showcase)：已上线站点欢迎提交作品 |
-| 文档源码 | [docs/](./docs/) |
-| 旧版手册 | [docs.tangly1024.com](https://docs.tangly1024.com/) |
+---
 
-## 参与社区
+## 📁 目录结构
 
-NotionNext 主仓库由 GitHub 组织 [notionnext-org](https://github.com/notionnext-org) 维护。欢迎提交问题、补充文档、贡献主题、修复代码或参与讨论。
-
-| 内容 | 链接 |
-| --- | --- |
-| 参与社区 | [community-participate.md](./docs/user-guide/community-participate.md) |
-| 5.0 愿景与路线图 | [VISION_ROADMAP.md](./docs/developer/VISION_ROADMAP.md) |
-| 贡献指南 | [CONTRIBUTING.zh-CN.md](./CONTRIBUTING.zh-CN.md) |
-| 项目治理 | [GOVERNANCE.zh-CN.md](./GOVERNANCE.zh-CN.md) |
-| 维护者 | [MAINTAINERS.md](./MAINTAINERS.md) |
-| 行为准则 | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) |
-| 讨论区 | [GitHub Discussions](https://github.com/notionnext-org/NotionNext/discussions) |
-
-如果你在仓库转让前已克隆旧地址，建议更新远程仓库：
-
-```bash
-git remote set-url origin https://github.com/notionnext-org/NotionNext.git
-git remote -v
+```
+├── conf/                    # 配置目录
+│   ├── notify.config.js     # 🆕 推送通知配置
+│   ├── contact.config.js    # 联系方式配置
+│   └── ...
+├── lib/
+│   ├── notify/              # 🆕 推送通知核心
+│   │   ├── webpush.js       # VAPID + RFC 8291 加密
+│   │   ├── storage.js       # Redis + 文件存储
+│   │   ├── channels.js      # 各渠道发送器
+│   │   └── index.js         # 推送调度
+│   └── ...
+├── pages/
+│   ├── api/push/            # 🆕 推送 API
+│   │   ├── vapid-public-key.js
+│   │   ├── subscribe.js
+│   │   ├── test.js
+│   │   ├── send.js
+│   │   ├── subscriptions.js
+│   │   └── status.js
+│   ├── admin/
+│   │   └── notify-status.js # 🆕 状态检查页面
+│   └── ...
+├── public/
+│   └── sw.js                # 🆕 Service Worker
+├── themes/example/          # example 主题
+│   ├── components/
+│   │   ├── SettingsDropdown.js  # 🆕 通知设置 + 字号调节
+│   │   ├── NoticeTimeline.js    # 🆕 公告时间线
+│   │   ├── Announcement.js      # 重构为时间线
+│   │   └── ...
+│   └── style.js             # 字号/时间线样式
+├── README.md                # 本文件
+├── README-NEXT.md           # 🆕 定制说明文档
+├── vercel.json              # cleanUrls 配置
+└── .env.example             # 环境变量模板
 ```
 
-## 技术栈
+---
 
-- **框架**：[Next.js](https://nextjs.org)
+## 🛠 技术栈
+
+- **框架**：[Next.js 15](https://nextjs.org)
 - **样式**：[Tailwind CSS](https://www.tailwindcss.cn/)
 - **渲染**：[react-notion-x](https://github.com/NotionX/react-notion-x)
-- **评论**：Twikoo、Giscus、Gitalk、Cusdis、Utterances
+- **存储**：[Upstash Redis](https://upstash.com)（免费层 100K 命令/天）
+- **推送**：Web Push API + Telegram Bot API + Server酱
 - **部署**：[Vercel](https://vercel.com)
 
-## 相关项目
+---
 
-- [Elog](https://github.com/LetTTGACO/elog)：Markdown 批量导出工具，支持组合 Notion、语雀、FlowUs、飞书等写作平台与 Hexo、VitePress、Halo、WordPress 等博客平台。
+## 🔐 安全
 
-## 致谢
+- ✅ 无硬编码密钥 / Token / 密码
+- ✅ 所有敏感配置通过环境变量传入
+- ✅ `.env.local`、`.next/`、`*.pem` 已 gitignore
+- ✅ VAPID 密钥存储在 Redis，不提交到 Git
 
-感谢 Craig Hart 发起的 Nobelium 项目。
+---
 
-<table><tr align="left">
-  <td align="center"><a href="https://github.com/craigary" title="Craig Hart"><img src="https://avatars.githubusercontent.com/u/10571717" width="64px;" alt="Craig Hart"/></a><br/><a href="https://github.com/craigary" title="Craig Hart">Craig Hart</a></td>
-</tr></table>
+## 👤 博主信息
 
-感谢每一位参与代码、主题、文档、Issue、Review 与发布维护的贡献者。
+| 项目 | 链接 |
+|------|------|
+| 博客 | https://blog.20240606.xyz |
+| GitHub | https://github.com/666su |
+| Telegram | https://t.me/Suxun1912 |
+| B站 | https://space.bilibili.com/1561087564 |
 
-[![Contributors](https://contrib.rocks/image?repo=notionnext-org/NotionNext)](https://github.com/notionnext-org/NotionNext/graphs/contributors)
+---
 
-## 使用声明
-
-本项目为免费、公开资源，仅限个人学习和合法站点建设使用。禁止利用本项目发布非法内容或进行违法活动。
-
-## License
+## 📄 License
 
 The MIT License.
 
-## Project Stars
-
-[![GitHub stars](https://img.shields.io/github/stars/notionnext-org/NotionNext?style=social)](https://github.com/notionnext-org/NotionNext/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/notionnext-org/NotionNext?style=social)](https://github.com/notionnext-org/NotionNext/forks)
-
-Live star-history charts are temporarily unavailable because GitHub now restricts historical stargazer data to repository owners and collaborators.
+基于 [NotionNext](https://github.com/tangly1024/NotionNext) 二次开发。
