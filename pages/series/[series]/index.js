@@ -2,7 +2,10 @@ import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
-import { groupPostsBySeries, getAllSeriesNames } from '@/lib/utils/series'
+import {
+  getAllSeriesNames,
+  normalizeSeriesNames
+} from '@/lib/utils/series'
 
 /**
  * 新增文章系列展示功能
@@ -24,9 +27,10 @@ export async function getStaticProps({ params: { series }, locale }) {
   )
 
   // 新增文章系列展示功能：筛选属于该系列的文章
-  const targetSeries = decodeURIComponent(series)
-  props.posts = (props.posts || []).filter(
-    post => post.series && post.series.trim() === targetSeries
+  // 兼容 text / select / multi_select：多选时文章属于多个系列
+  const targetSeries = decodeURIComponent(series).trim()
+  props.posts = (props.posts || []).filter(post =>
+    normalizeSeriesNames(post.series).includes(targetSeries)
   )
 
   // 按 number 排序（无 number 则按日期倒序）

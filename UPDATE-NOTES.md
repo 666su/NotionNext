@@ -23,6 +23,71 @@
 
 ---
 
+## 2026-09-28 修复 series 属性改为 Notion 下拉类型后列表排版错乱
+
+### 问题现象
+
+Notion 数据库中 `series` 属性由 **text(rich_text)** 改成 **tags/下拉选择**（select / multi_select）后：
+
+- 首页/文章列表的**系列分组全部失效**，所有文章退化成普通单列列表（排版错乱）
+- 分类切换按钮（LayoutSwitcher 1/2/3 列）消失（`hasSeries` 恒为 false）
+- `/series/[series]` 详情页 `getStaticProps` 抛出 `TypeError: post.series.trim is not a function` → 页面 500
+- `/series/*` 静态路径全部丢失（`getAllSeriesNames` 返回空）
+
+### 根因
+
+`lib/db/notion/getPageProperties.js` 对 `select`/`multi_select` 类型执行
+`getTextContent(val).split(',')`，返回的是**数组**；而 text 类型返回**字符串**。
+自定义的系列功能代码里到处写着 `typeof post.series === 'string'` 和 `post.series.trim()`，
+属性类型一改就全部失配 —— 系列被当成“无系列”文章，导致上述所有现象。
+
+> 线上实测（2026-09-28 抓取 `blog.20240606.xyz` 的 `__NEXT_DATA__`）：
+> `posts[].series` 已经是 `["Cloudflare建站实践"]` 这样的**数组**，
+> 而 `.next/cache` 中旧数据仍是字符串，确认是 Notion 属性类型变更所致。
+
+### 涉及文件
+
+| 文件 | 改动 |
+|------|------|
+| `lib/utils/series.js` | **新增** `normalizeSeriesName()` / `normalizeSeriesNames()` 归一化工具；`groupPostsBySeries`、`getAllSeriesNames` 改用归一化，移除 `typeof === 'string'` 硬判断；支持 multi_select 多值（一篇可属多个系列） |
+| `lib/db/notion/getPageProperties.js` | 在属性解析后统一收敛：`series` → 字符串数组、`number` → 字符串，兼容 text/select/multi_select 三种类型 |
+| `lib/db/notion/getCustomMenu.js` | 菜单自动跳转系列页的 `typeof page.series === 'string'` 判断改为 `normalizeSeriesName()` |
+| `pages/series/[series]/index.js` | `post.series.trim() === target` 改为 `normalizeSeriesNames(post.series).includes(target)`，修复 TypeError |
+| `__tests__/lib/utils/series.test.js` | **新增**：覆盖 text / select / multi_select（含多值）兼容性与系列分组回归 |
+
+### 兼容性
+
+- 原来的 **text(rich_text)** 类型行为完全不变（字符串经归一化后仍是同一系列名）
+- 现在 select / multi_select / text **三种类型都能正常工作**
+- multi_select 多选时，文章会出现在它所属的**每个**系列分组中
+
+### 验证
+
+- **改前/改后对照构建**（同一份线上数据，先 `git stash` 跑原始代码再跑修复代码）：
+
+  | 检查项 | 修复前 | 修复后 |
+  |--------|--------|--------|
+  | 首页 `/series/` 链接数 | 0 | **4** |
+  | 侧栏「系列全集」区块 | 缺失 | ✓ 存在 |
+  | 系列时间线条目 | 缺失 | ✓ 4 条 |
+  | 预渲染 `/series/*` 页面数 | 0 | **4** |
+
+- 修复后 `next build` 退出码 0，4 个系列页全部预渲染成功：
+  `Cloudflare建站实践`(2 篇)、`软路由折腾系列`(2 篇)、`开源工具推荐`(1 篇)、`DeepSeek Harness`(2 篇)，
+  7 篇文章全部归组、无遗漏。
+- `jest` 全量 **39 套 / 220 个测试通过**（含本次新增 13 个），`tsc --noEmit` 无报错。
+
+> 附注：对照构建显示首页 SSR 首屏输出骨架屏（`themes/theme.js` 的 `next/dynamic`
+> 在 SSR 阶段渲染 `IndexLayoutLoading`），改前改后均存在，与本次改动无关。
+
+### 上游冲突风险
+
+- **高** — `getPageProperties.js` 本就是与上游差异最大的文件之一（此前已标红），
+  本次在其属性解析段落新增 2 行归一化逻辑，同步上游时需重新应用。
+- **中** — `lib/utils/series.js`、`pages/series/[series]/index.js`、`getCustomMenu.js` 属自研系列功能，上游无对应实现，不会冲突。
+
+---
+
 ## 2026-09-21 文档与修复
 
 ### 文档更新
