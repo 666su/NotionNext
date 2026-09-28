@@ -37,7 +37,7 @@ Keep writing in Notion, and publish your content as a blog, portfolio, knowledge
   </a>
 </p>
 
-[中文](./README.md) | English
+[简体中文](./README.zh-CN.md) | English
 
 </div>
 

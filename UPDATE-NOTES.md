@@ -23,6 +23,49 @@
 
 ---
 
+## 2026-09-28 README 改为中英双语，默认展示英文
+
+### 背景
+
+仓库根目录的 `README.md` 此前是纯中文，而 GitHub 默认展示它。
+参考作者其他开源项目（`dsh-desktop`）的做法，改为
+**英文为默认（`README.md`）+ 中文（`README.zh-CN.md`）**，
+两个文件顶部各放一对 badge 按钮互相跳转，当前语言高亮为蓝色。
+
+### 涉及文件
+
+| 文件 | 改动 |
+|------|------|
+| `README.md` | **重写为英文**（GitHub 默认展示这一份），顶部加中英切换 badge |
+| `README.zh-CN.md` | **新增**：原中文内容迁移至此，顶部加中英切换 badge |
+| `README_EN.md` | 上游官方英文说明，仅修正其自身语言切换链接 `./README.md` → `./README.zh-CN.md` |
+
+### 切换按钮写法
+
+```markdown
+[![English](https://img.shields.io/badge/English-2f81f7?style=for-the-badge)](README.md)
+[![简体中文](https://img.shields.io/badge/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87-8b949e?style=for-the-badge)](README.zh-CN.md)
+```
+
+当前语言用 `2f81f7`（蓝），另一种语言用 `8b949e`（灰），进入页面即可看出所处语言版本。
+
+### 注意事项
+
+- **与上游约定相反**：上游 `README.md` 是中文、`README_EN.md` 是英文。
+  本仓库按需求改为英文默认，同步上游时**不要**把上游的 `README.md` 直接覆盖回来。
+- `README_EN.md` 是上游文件且目前无人链接，保留仅作参考；
+  本仓库真正的英文说明是 `README.md`。
+- badge 文字里的中文需 URL 编码（`%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87` = 简体中文），否则部分环境不显示。
+
+### 上游冲突风险
+
+- **高** — `README.md` 是与上游差异最大的文件之一（上游为中文），
+  每次同步上游都需重新应用英文版；建议同步后立即检查该文件语言。
+- **低** — `README.zh-CN.md` 为本仓库独有，上游不存在同名文件。
+- **低** — `README_EN.md` 仅 1 行链接改动。
+
+---
+
 ## 2026-09-28 修复 series 属性改为 Notion 下拉类型后列表排版错乱
 
 ### 问题现象
