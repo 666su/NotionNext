@@ -23,6 +23,138 @@
 
 ---
 
+## 2026-09-29 新增左侧排行榜与文章点赞功能
+
+### 背景
+
+官方 NotionNext **既没有文章点赞功能，也没有可用的阅读量排行**。本博客左侧（启用
+`LAYOUT_SIDEBAR_REVERSE` 后的空白区）此前一直空着，右侧则是系列时间线 + 写作日历，
+左右不对称。
+
+本次在这块空白区新增**上下两个榜单**，均按次数**从高到低**排序：
+
+- **阅读榜**（上）— 文章查看次数
+- **点赞榜**（下）— 文章点赞次数
+
+点赞功能是排行榜有数据的前提，因此一并实现。同时，原主题顶部的阅读量是一个
+不蒜子空 `span`（线上根本不显示数字），本次替换为真实的自建计数。
+
+### 界面结构
+
+```
+┌───────────────────────────────────────────────────────┐
+│  Header / TitleBar                                    │
+├──────────────┬─────────────────────┬──────────────────┤
+│  🏆 阅读榜    │                     │  📚 系列时间线    │
+│   1 文章A 300 │      文章列表/正文    │  📅 写作日历      │
+│   2 文章B 200 │                     │                  │
+│  ──────────  │                     │                  │
+│  ❤️ 点赞榜    │                     │                  │
+│   1 文章X  90 │                     │                  │
+└──────────────┴─────────────────────┴──────────────────┘
+   DOM 最后一项 → flex-row-reverse 下落在视觉最左
+```
+
+### 涉及文件
+
+**新增（13 个）**
+
+| 文件 | 作用 |
+|------|------|
+| `conf/rank.config.js` | 配置：开关 / 条数 / 去重窗口 |
+| `lib/rank/storage.js` | 存储层：Redis Hash 自增 + 文件回退 + 去重标记 |
+| `lib/rank/index.js` | 业务逻辑：浏览去重、点赞切换、榜单排序、数据导入 |
+| `pages/api/rank/view.js` | POST 记录浏览 |
+| `pages/api/rank/like.js` | POST 点赞/取消，GET 查询状态 |
+| `pages/api/rank/info.js` | GET 单篇互动数据（`record=1` 时顺带计数） |
+| `pages/api/rank/top.js` | GET 双榜单数据（按次数降序） |
+| `pages/api/rank/seed.js` | POST 导入历史数据 / 重置计数（需令牌） |
+| `pages/api/rank/status.js` | GET 存储后端与计数概况（部署自检） |
+| `themes/example/components/RankBoard.js` | 左侧双榜单组件 |
+| `themes/example/components/LikeButton.js` | 点赞按钮（inline / block） |
+| `themes/example/components/rankClient.js` | 互动数据客户端共享 store |
+| `themes/example/components/ArticleInteraction.js` | 文章页互动区（唯一计数触发点） |
+
+**测试（6 个）**
+
+| 文件 | 用例数 | 覆盖 |
+|------|-------|------|
+| `__tests__/lib/rank-storage.test.js` | 21 | 自增、三种导入模式、清空、去重标记、匿名哈希 |
+| `__tests__/lib/rank.test.js` | 17 | 浏览去重、并发计数、点赞幂等与取消、计数隔离 |
+| `__tests__/lib/rank-board.test.js` | 15 | **降序排序**、并列按时间、limit、过滤菜单页 |
+| `__tests__/lib/rank-api.test.js` | 30 | 6 个接口的完整请求-响应与错误分支 |
+| `__tests__/themes/rank-board-component.test.js` | 10 | 组件渲染：上下排列、降序、空态与失败降级 |
+| `__tests__/themes/rank-layout.test.js` | 12 | **布局不变量**：榜单在左、系列面板在右 |
+
+**修改（6 个）**
+
+| 文件 | 改动 |
+|------|------|
+| `blog.config.js` | 引入 `conf/rank.config` |
+| `.env.example` | 补充排行榜环境变量说明 |
+| `themes/example/index.js` | 左侧栏挂载 `RankBoard`；文章页挂载 `ArticleInteraction` |
+| `themes/example/components/PostMeta.js` | 阅读量改为真实数字（移除不蒜子空 span）+ 点赞按钮 |
+| `themes/example/style.js` | 排行榜样式（滚动条、标题省略、点赞回弹） |
+| `README-NEXT.md` | 新增功能说明章节 |
+
+### 配置项
+
+| 配置 | 默认值 | 说明 |
+|------|--------|------|
+| `RANK_ENABLE` | `true` | 总开关 |
+| `RANK_VIEW_ENABLE` | `true` | 阅读统计与阅读榜 |
+| `RANK_LIKE_ENABLE` | `true` | 点赞功能与点赞榜 |
+| `RANK_LIST_SIZE` | `10` | 每个榜单条数（1–50） |
+| `RANK_VIEW_WINDOW_HOURS` | `6` | 同访客重复浏览去重窗口，`0` 为不去重 |
+| `RANK_MAX_CANDIDATES` | `500` | 参与排行的候选文章上限 |
+| `RANK_STORAGE_PATH` | 空 | 未配 Redis 时的计数文件路径 |
+| `RANK_SEED_SECRET` | 空 | 导入历史数据 / 重置计数的管理令牌 |
+
+### 关键技术决策
+
+| 问题 | 方案 |
+|------|------|
+| 左侧空白区的定位 | 容器是 `flex-row-reverse`（`LAYOUT_SIDEBAR_REVERSE` 恒真），**DOM 最后一个元素在视觉最左**；榜单挂到内容之后，并留 `order-first` 兜底 |
+| 阅读量是空壳 | 自建计数，不再依赖第三方统计 |
+| 高并发丢计数 | Redis `HINCRBY` 原子自增；文件回退用进程内串行队列 |
+| 刷新刷阅读量 | 按 `IP + UA` 哈希去重（不落库原始 IP），默认 6 小时 |
+| 连点刷赞 | 标记存 Redis `SET NX`，前端发显式 `like`/`unlike`，接口幂等 |
+| 文章页重复请求 | 模块级 store：`ArticleInteraction` 唯一触发，其余组件只订阅 |
+| 榜单计算开销 | 结果 `s-maxage=60` 允许 CDN 缓存 |
+| 重置后无法再点赞 | `resetCounters` 同步清除 `liked-by` 去重标记 |
+
+### 注意事项
+
+- **必须配 `REDIS_URL`**（可复用推送通知的同一实例）。未配置时计数写本地文件，
+  在 Vercel 上不会持久化。
+- 计数**从上线后从零累计**。需要历史数据时用 `/api/rank/seed`，
+  且应先设 `RANK_SEED_SECRET`：
+
+  ```bash
+  curl -X POST https://blog.20240606.xyz/api/rank/seed \
+    -H 'Content-Type: application/json' \
+    -d '{"secret":"你的密钥","action":"import","mode":"max",
+         "views":{"文章ID":1234}}'
+  ```
+
+  `mode:"max"` 只增不减，可安全重复执行。
+
+- 榜单在 `lg` 以上显示，移动端自动隐藏，避免挤占小屏阅读空间。
+- 部署自检：`curl https://你的域名/api/rank/status`，`storage` 应为 `redis`。
+
+### 上游冲突风险
+
+- **中** — `themes/example/index.js` 是上游主题文件，本次在其
+  `container-wrapper` 内新增了 `RankBoard`、并在文章页新增 `ArticleInteraction`；
+  同步上游时需重新应用这两处挂载。
+- **中** — `themes/example/components/PostMeta.js` 移除了上游的不蒜子空 `span`，
+  同步上游时不要把该行覆盖回来（否则阅读量会重新变成空壳）。
+- **低** — `lib/rank/`、`pages/api/rank/`、`conf/rank.config.js`、
+  `themes/example/components/Rank*.js` 等均为本仓库独有，上游无同名文件。
+- **低** — `blog.config.js` 仅新增一行 `...require('./conf/rank.config')`。
+
+---
+
 ## 2026-09-28 README 改为中英双语，默认展示英文
 
 ### 背景

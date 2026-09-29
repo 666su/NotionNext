@@ -811,6 +811,53 @@ const Style = () => {
         }
     }
 
+    /*
+     * ==============================
+     * 新增排行榜与点赞功能 - 排行榜样式
+     * ==============================
+     */
+
+    /* 榜单条目：数字使用等宽数字，避免读数跳动 */
+    #theme-example .rank-board .tabular-nums {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* 长标题单行省略，防止榜单宽度被撑开 */
+    #theme-example .rank-board .truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* 滚动条：榜单过长时可滚动，滚动条保持纤细不抢视觉 */
+    #theme-example .rank-board ul {
+        max-height: 22rem;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+
+    #theme-example .rank-board ul::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    #theme-example .rank-board ul::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 2px;
+    }
+
+    .dark #theme-example .rank-board ul::-webkit-scrollbar-thumb {
+        background: #374151;
+    }
+
+    /* 文末点赞按钮：点击时轻微回弹，给出明确反馈 */
+    #theme-example .rank-like-block button {
+        transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    #theme-example .rank-like-block button:active {
+        transform: scale(0.96);
+    }
+
 ${themeConsoleStyle('example', CONFIG)}
 
 

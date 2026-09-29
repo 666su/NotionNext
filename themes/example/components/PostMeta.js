@@ -1,6 +1,26 @@
+import { siteConfig } from '@/lib/config'
 import { useGlobal } from '@/lib/global'
 import { formatDateFmt } from '@/lib/utils/formatDate'
 import SmartLink from '@/components/SmartLink'
+import CONFIG from '../config'
+import LikeButton from './LikeButton'
+import { useRankInfo } from './rankClient'
+
+/**
+ * 新增排行榜与点赞功能
+ * 阅读量：改为显示自建统计的真实数字（原不蒜子 span 在本站并不显示数字）
+ */
+const PostViews = ({ postId, enabled }) => {
+  const info = useRankInfo(postId, { enabled })
+  if (!enabled || !postId) return null
+
+  return (
+    <span className='font-light mr-2'>
+      <i className='mr-1 fas fa-eye' />
+      <span className='tabular-nums'>{typeof info?.views === 'number' ? info.views : '—'}</span>
+    </span>
+  )
+}
 
 /**
  * 文章详情的元信息
@@ -89,15 +109,18 @@ export const PostMeta = props => {
             <span className='mr-2'>|</span>
 
 
-            {/* 阅读量 */}
-            <span className='hidden busuanzi_container_page_pv font-light mr-2'>
-              <i className='mr-1 fas fa-eye' />
+            {/* 阅读量（自建统计，原不蒜子 span 在本站不显示数字） */}
+            <PostViews
+              postId={post?.id}
+              enabled={siteConfig('RANK_VIEW_ENABLE', true, CONFIG)}
+            />
 
-              &nbsp;
 
-              <span className='mr-2 busuanzi_value_page_pv' />
+            <span className='mr-2'>|</span>
 
-            </span>
+
+            {/* 点赞（新增功能） */}
+            <LikeButton post={post} variant='inline' />
 
 
           </>

@@ -23,6 +23,8 @@ import TitleBar from './components/TitleBar'
 import Announcement from './components/Announcement'
 import NoticeTimeline from './components/NoticeTimeline'
 import { SeriesPanel } from './components/SeriesPanel'
+import { RankBoard } from './components/RankBoard'
+import { ArticleInteraction } from './components/ArticleInteraction'
 import CONFIG from './config'
 import { Style } from './style'
 
@@ -48,7 +50,11 @@ const LayoutBase = props => {
   // 根据列数决定内容区最大宽度
   // 一列 = max-w-4xl (原始)，两列 = max-w-5xl，三列 = 全宽
   const contentMaxWidth =
-    seriesColumns === 3 ? 'max-w-none' : seriesColumns === 2 ? 'max-w-5xl' : 'max-w-4xl'
+    seriesColumns === 3
+      ? 'max-w-none'
+      : seriesColumns === 2
+        ? 'max-w-5xl'
+        : 'max-w-4xl'
 
   // 文章详情页左右布局改为上下布局
   const LAYOUT_VERTICAL =
@@ -59,65 +65,84 @@ const LayoutBase = props => {
 
   return (
     <SeriesColumnsContext.Provider value={columnsCtx}>
-    <div
-      id='theme-example'
-      className={`${siteConfig('FONT_STYLE')} dark:text-gray-300  bg-white dark:bg-black scroll-smooth`}>
-      <Style />
+      <div
+        id='theme-example'
+        className={`${siteConfig('FONT_STYLE')} dark:text-gray-300  bg-white dark:bg-black scroll-smooth`}
+      >
+        <Style />
 
-      {/* 页头 */}
-      <Header {...props} />
-      {/* 标题栏 */}
-      <TitleBar {...props} />
+        {/* 页头 */}
+        <Header {...props} />
+        {/* 标题栏 */}
+        <TitleBar {...props} />
 
-      {/* 主体 */}
-      <div id='container-inner' className='w-full relative z-10'>
-        <div
-          id='container-wrapper'
-          className={`relative mx-auto justify-center md:flex py-3 px-2
+        {/* 主体 */}
+        <div id='container-inner' className='w-full relative z-10'>
+          <div
+            id='container-wrapper'
+            className={`relative mx-auto justify-center md:flex py-3 px-2
           ${LAYOUT_SIDEBAR_REVERSE ? 'flex-row-reverse' : ''} 
           ${LAYOUT_VERTICAL ? 'items-center flex-col' : 'items-start'} 
-          `}>
-          {/* 新增文章系列展示功能：右侧系列面板（时间线+日历），DOM第一 → flex-row-reverse下显示在最右 */}
-          {!fullWidth && !post && props.posts && props.posts.length > 0 && (
-            <div className='hidden lg:block w-56 xl:w-64 flex-shrink-0 sticky top-20'>
-              <SeriesPanel posts={props.posts} />
-            </div>
-          )}
+          `}
+          >
+            {/* 新增文章系列展示功能：右侧系列面板（时间线+日历），DOM第一 → flex-row-reverse下显示在最右 */}
+            {!fullWidth && !post && props.posts && props.posts.length > 0 && (
+              <div className='hidden lg:block w-56 xl:w-64 flex-shrink-0 sticky top-20'>
+                <SeriesPanel posts={props.posts} />
+              </div>
+            )}
 
-          {/* 内容 */}
+            {/* 内容 */}
+            <div
+              className={`${fullWidth ? '' : contentMaxWidth} w-full xl:px-14 lg:px-4 transition-all duration-300`}
+            >
+              <Transition
+                show={!onLoading}
+                appear={true}
+                enter='transition ease-in-out duration-700 transform order-first'
+                enterFrom='opacity-0 translate-y-16'
+                enterTo='opacity-100'
+                leave='transition ease-in-out duration-300 transform'
+                leaveFrom='opacity-100 translate-y-0'
+                leaveTo='opacity-0 -translate-y-16'
+                unmount={false}
+              >
+                {/* 嵌入模块 */}
+                {props.slotTop}
+                {children}
+              </Transition>
+            </div>
+
+            {/* 新增排行榜功能：左侧排行榜（阅读榜 + 点赞榜）
+              本站 LAYOUT_SIDEBAR_REVERSE 恒为 true → 容器为 flex-row-reverse，
+              DOM 最后一个元素落在视觉最左，正是原布局的空白处（系列面板在最右）。
+              若将来关闭该配置（普通 row 布局），用 order-first 把榜单拉回左侧。 */}
+            {!fullWidth && siteConfig('RANK_ENABLE', true) && (
+              <div
+                className={`hidden lg:block w-56 xl:w-64 flex-shrink-0 sticky top-20 ${
+                  LAYOUT_SIDEBAR_REVERSE ? '' : 'order-first'
+                }`}
+              >
+                <RankBoard />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 页脚 */}
+        <Footer {...props} />
+
+        {/* 回顶按钮 */}
+        <div className='fixed right-4 bottom-4 z-10'>
           <div
-            className={`${fullWidth ? '' : contentMaxWidth} w-full xl:px-14 lg:px-4 transition-all duration-300`}>
-            <Transition
-              show={!onLoading}
-              appear={true}
-              enter='transition ease-in-out duration-700 transform order-first'
-              enterFrom='opacity-0 translate-y-16'
-              enterTo='opacity-100'
-              leave='transition ease-in-out duration-300 transform'
-              leaveFrom='opacity-100 translate-y-0'
-              leaveTo='opacity-0 -translate-y-16'
-              unmount={false}>
-              {/* 嵌入模块 */}
-              {props.slotTop}
-              {children}
-            </Transition>
+            title={locale.POST.TOP}
+            className='cursor-pointer p-2 text-center'
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            <i className='fas fa-angle-up text-2xl' />
           </div>
         </div>
       </div>
-
-      {/* 页脚 */}
-      <Footer {...props} />
-
-      {/* 回顶按钮 */}
-      <div className='fixed right-4 bottom-4 z-10'>
-        <div
-          title={locale.POST.TOP}
-          className='cursor-pointer p-2 text-center'
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <i className='fas fa-angle-up text-2xl' />
-        </div>
-      </div>
-    </div>
     </SeriesColumnsContext.Provider>
   )
 }
@@ -179,19 +204,18 @@ const LayoutSlug = props => {
   useEffect(() => {
     // 404
     if (!post) {
-      setTimeout(
-        () => {
-          if (isBrowser) {
-            const article = document.querySelector('#article-wrapper #notion-article')
-            if (!article) {
-              router.push('/404').then(() => {
-                console.warn('找不到页面', router.asPath)
-              })
-            }
+      setTimeout(() => {
+        if (isBrowser) {
+          const article = document.querySelector(
+            '#article-wrapper #notion-article'
+          )
+          if (!article) {
+            router.push('/404').then(() => {
+              console.warn('找不到页面', router.asPath)
+            })
           }
-        },
-        waiting404
-      )
+        }
+      }, waiting404)
     }
   }, [post])
 
@@ -209,15 +233,19 @@ const LayoutSlug = props => {
             <NoticeTimeline post={post} />
           </div>
         </div>
-      ) : post && (
-        <div>
-          <PostMeta post={post} />
-          <div id='article-wrapper'>
-            <NotionPage post={post} />
-            <ShareBar post={post} />
+      ) : (
+        post && (
+          <div>
+            <PostMeta post={post} />
+            <div id='article-wrapper'>
+              <NotionPage post={post} />
+              <ShareBar post={post} />
+            </div>
+            {/* 新增排行榜与点赞功能：文末点赞按钮（同时负责记录一次浏览） */}
+            <ArticleInteraction post={post} />
+            <Comment frontMatter={post} />
           </div>
-          <Comment frontMatter={post} />
-        </div>
+        )
       )}
     </>
   )
@@ -242,16 +270,21 @@ const Layout404 = props => {
     }, 3000)
   }, [])
 
-  return <>
-        <div className='md:-mt-20 text-black w-full h-screen text-center justify-center content-center items-center flex flex-col'>
-            <div className='dark:text-gray-200'>
-                <h2 className='inline-block border-r-2 border-gray-600 mr-2 px-3 py-2 align-top'><i className='mr-2 fas fa-spinner animate-spin' />404</h2>
-                <div className='inline-block text-left h-32 leading-10 items-center'>
-                    <h2 className='m-0 p-0'>页面无法加载，即将返回首页</h2>
-                </div>
-            </div>
+  return (
+    <>
+      <div className='md:-mt-20 text-black w-full h-screen text-center justify-center content-center items-center flex flex-col'>
+        <div className='dark:text-gray-200'>
+          <h2 className='inline-block border-r-2 border-gray-600 mr-2 px-3 py-2 align-top'>
+            <i className='mr-2 fas fa-spinner animate-spin' />
+            404
+          </h2>
+          <div className='inline-block text-left h-32 leading-10 items-center'>
+            <h2 className='m-0 p-0'>页面无法加载，即将返回首页</h2>
+          </div>
         </div>
+      </div>
     </>
+  )
 }
 
 /**
@@ -326,11 +359,13 @@ const LayoutCategoryIndex = props => {
             key={category.name}
             href={`/category/${category.name}`}
             passHref
-            legacyBehavior>
+            legacyBehavior
+          >
             <div
               className={
                 'hover:text-black dark:hover:text-white dark:text-gray-300 dark:hover:bg-gray-600 px-5 cursor-pointer py-2 hover:bg-gray-100'
-              }>
+              }
+            >
               <i className='mr-4 fas fa-folder' />
               {category.name}({category.count})
             </div>
@@ -357,7 +392,8 @@ const LayoutTagIndex = props => {
               key={tag}
               href={`/tag/${encodeURIComponent(tag.name)}`}
               passHref
-              className={`cursor-pointer inline-block rounded hover:bg-gray-500 hover:text-white duration-200 mr-2 py-1 px-2 text-xs whitespace-nowrap dark:hover:text-white text-gray-600 hover:shadow-xl dark:border-gray-400 notion-${tag.color}_background dark:bg-gray-800`}>
+              className={`cursor-pointer inline-block rounded hover:bg-gray-500 hover:text-white duration-200 mr-2 py-1 px-2 text-xs whitespace-nowrap dark:hover:text-white text-gray-600 hover:shadow-xl dark:border-gray-400 notion-${tag.color}_background dark:bg-gray-800`}
+            >
               <div className='font-light dark:text-gray-400'>
                 <i className='mr-1 fas fa-tag' />{' '}
                 {tag.name + (tag.count ? `(${tag.count})` : '')}{' '}

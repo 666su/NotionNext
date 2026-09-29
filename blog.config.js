@@ -46,6 +46,7 @@ const BLOG = {
   ...require('./conf/ai.config'), // AI 相关配置（AI摘要、AI聊天机器人等）
   ...require('./conf/performance.config'), // 性能优化配置
   ...require('./conf/top-tag.config'), // 置顶文章全局配置
+  ...require('./conf/rank.config'), // 新增排行榜与点赞功能配置
 
   // 高级用法
   ...require('./conf/layout-map.config'), // 路由与布局映射自定义，例如自定义特定路由的页面布局
