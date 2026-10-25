@@ -68,3 +68,10 @@ package-lock.json
 .perf/
 tsconfig.tsbuildinfo
 webpack-internal:/
+
+# 质量/体检脚本生成的报告（可随时重新生成）
+/validation-report.json
+/health-report.json
+
+# 本地临时笔记
+notion page id.txt

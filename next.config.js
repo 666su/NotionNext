@@ -205,8 +205,7 @@ const nextConfig = {
   poweredByHeader: false,
   generateEtags: true,
 
-  // 构建优化
-  swcMinify: true,
+  // 构建优化（Next.js 15 起 SWC 压缩默认开启，swcMinify 已被移除）
   modularizeImports: {
     '@heroicons/react/24/outline': {
       transform: '@heroicons/react/24/outline/{{member}}'

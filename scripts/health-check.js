@@ -24,12 +24,12 @@ function log(message, color = 'reset') {
   console.log(`${colors[color]}${message}${colors.reset}`)
 }
 
-function runCommand(command, description, silent = false) {
+function runCommand(command, description, silent = false, timeout = 30000) {
   try {
     const output = execSync(command, { 
       encoding: 'utf8', 
       stdio: silent ? 'pipe' : 'inherit',
-      timeout: 30000
+      timeout
     })
     return { success: true, output }
   } catch (error) {
@@ -133,7 +133,7 @@ function checkDocumentation() {
     { path: 'README.md', name: '项目说明文档' },
     { path: 'DEVELOPMENT.md', name: '开发者指南' },
     { path: 'DEPLOYMENT.md', name: '部署指南' },
-    { path: 'OPTIMIZATION_SUMMARY.md', name: '优化总结' }
+    { path: 'README-NEXT.md', name: '博客定制说明' }
   ]
   
   let passed = 0
@@ -237,7 +237,8 @@ function testBuild() {
   log('\n🏗️ 测试项目构建...', 'blue')
   
   log('🔧 运行构建命令...', 'cyan')
-  const result = runCommand('npm run build', '项目构建', true)
+  // 完整构建远超 30 秒，单独给 15 分钟超时
+  const result = runCommand('npm run build', '项目构建', true, 15 * 60 * 1000)
   
   if (result.success) {
     log('✅ 项目构建成功', 'green')

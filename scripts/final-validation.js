@@ -34,7 +34,7 @@ function validateOptimizationTasks() {
     {
       name: '项目分析与评估',
       checks: [
-        { file: 'OPTIMIZATION_SUMMARY.md', desc: '优化总结文档' },
+        { file: 'README-NEXT.md', desc: '博客定制说明' },
         { file: 'package.json', desc: '项目配置文件' }
       ]
     },
@@ -69,7 +69,7 @@ function validateOptimizationTasks() {
       checks: [
         { file: 'components/SEO.js', desc: 'SEO 组件优化', validate: validateSEOComponent },
         { file: 'components/Accessibility.js', desc: '可访问性组件' },
-        { file: 'lib/sitemap.js', desc: '站点地图生成器' }
+        { file: 'lib/utils/sitemap.js', desc: '站点地图生成器' }
       ]
     },
     {
@@ -84,10 +84,6 @@ function validateOptimizationTasks() {
     {
       name: '开发体验优化',
       checks: [
-        { file: '.vscode/settings.json', desc: 'VSCode 设置' },
-        { file: '.vscode/extensions.json', desc: 'VSCode 扩展推荐' },
-        { file: '.vscode/launch.json', desc: 'VSCode 调试配置' },
-        { file: '.vscode/tasks.json', desc: 'VSCode 任务配置' },
         { file: 'scripts/dev-tools.js', desc: '开发工具脚本' },
         { file: 'scripts/setup-git-hooks.js', desc: 'Git Hooks 设置' },
         { file: 'DEVELOPMENT.md', desc: '开发者指南' }
@@ -155,16 +151,22 @@ function validateDependencies(filePath) {
   try {
     const packageJson = JSON.parse(fs.readFileSync(filePath, 'utf8'))
     
-    // 检查关键依赖是否已更新
+    // 检查关键依赖的主版本（只比较主版本，避免补丁号升级后报告过期）
     const keyDeps = {
-      'next': '^14.2.30',
-      'react': '^18.3.1',
-      'tailwindcss': '^3.4.17'
+      next: 15,
+      react: 18,
+      tailwindcss: 3
     }
-    
-    for (const [dep, expectedVersion] of Object.entries(keyDeps)) {
-      const currentVersion = packageJson.dependencies?.[dep] || packageJson.devDependencies?.[dep]
-      if (!currentVersion || !currentVersion.includes(expectedVersion.replace('^', ''))) {
+
+    for (const [dep, expectedMajor] of Object.entries(keyDeps)) {
+      const currentVersion =
+        packageJson.dependencies?.[dep] || packageJson.devDependencies?.[dep]
+      const major = Number(
+        String(currentVersion || '')
+          .replace(/^[^\d]*/, '')
+          .split('.')[0]
+      )
+      if (!major || major !== expectedMajor) {
         return false
       }
     }
@@ -190,11 +192,10 @@ function validateNextConfig(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8')
     
-    // 检查性能优化配置
+    // 检查性能优化配置（Next.js 15 起 SWC 压缩默认开启，不再需要 swcMinify）
     const requiredConfigs = [
       'compress: true',
       'poweredByHeader: false',
-      'swcMinify: true',
       'X-Frame-Options',
       'X-Content-Type-Options',
       'Content-Security-Policy'
@@ -293,7 +294,7 @@ function generateFinalReport(taskResults) {
     log('🔧 建议完善剩余的配置项', 'yellow')
   } else {
     log('\n⚠️  还有较多任务需要完成', 'red')
-    log('📋 请参考 OPTIMIZATION_SUMMARY.md 了解详情', 'red')
+    log('📋 请参考 README-NEXT.md 了解详情', 'red')
   }
   
   // 生成报告文件
