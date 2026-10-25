@@ -621,6 +621,9 @@ rediss://default:xxx@your-db.upstash.io:6379
 | `public/blog-pet/sprites/catboy-sprites.webp` | 13 帧动作精灵图（162–233 KB） |
 | `scripts/blog-pet/generate_sprites.py` | 从立绘重新生成动作帧与精灵图 |
 | `docs/live2d/` | Live2D 制作规格（PSD 拆件清单、参数表、制作流程、接入说明） |
+| `docs/live2d/ARTIST_BRIEF.md` | 交给画师的分层 PSD 交接说明（画布/分层/补绘硬要求/验收） |
+| `docs/live2d/CUBISM_BINDING.md` | 交给建模师的 Cubism 绑定与导出方案 |
+| `scripts/blog-pet/check_psd_layers.py` | PSD 结构自检（图层是否齐全、画布与命名） |
 | `public/live2d/README.md` | 模型与运行时文件放置说明 |
 | `__tests__/components/blog-pet.test.js` | 组件交互测试（13 例） |
 | `__tests__/components/blog-pet-search.test.js` | 检索/设置/坐标测试（15 例） |

@@ -7,8 +7,10 @@
 
 | 文件 | 用途 |
 |---|---|
-| `psd_layer_manifest.csv` | 交给角色美术师的 PSD 拆件清单（图层分组、遮挡、补绘要求） |
-| `cubism_parameters.json` | 交给 Live2D 建模师的参数、范围、用途与物理分组 |
+| `ARTIST_BRIEF.md` | **交给角色美术师的交接说明**（画布、分层、补绘硬要求、交付物、验收） |
+| `CUBISM_BINDING.md` | **交给 Live2D 建模师**（变形器层级、绑定顺序、墨镜上推、物理、动作、导出） |
+| `psd_layer_manifest.csv` | PSD 拆件清单（图层分组、遮挡、补绘要求） |
+| `cubism_parameters.json` | 参数、范围、用途与物理分组 |
 | `production_pipeline.md` | 从拆件到导出的制作流程与验收标准 |
 | `STARTER_README.md` | 起始包原始说明 |
 
