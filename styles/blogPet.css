@@ -1,0 +1,828 @@
+/* ==========================================================================
+   Blog Pet 桌宠样式
+   统一使用 blog-pet- 前缀，避免污染全站样式
+   ========================================================================== */
+
+/* ---------- 桌宠主体 ---------- */
+.blog-pet-pet {
+  position: fixed;
+  z-index: 55;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* 自己散步/拖动回位时平滑移动 */
+  transition: left 1.5s cubic-bezier(0.33, 0.9, 0.3, 1),
+    top 1.5s cubic-bezier(0.33, 0.9, 0.3, 1);
+}
+
+.blog-pet-pet.is-drag-armed {
+  cursor: grabbing;
+}
+
+.blog-pet-pet:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 4px;
+  border-radius: 18px;
+}
+
+/* 跟随鼠标的 3D 倾斜 */
+.blog-pet-tilt {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: perspective(700px) rotateX(var(--pet-rx, 0deg))
+    rotateY(var(--pet-ry, 0deg)) scale(var(--pet-scale, 1));
+  transform-style: preserve-3d;
+  transition: transform 0.18s ease-out;
+}
+
+/* 呼吸/摇摆层 */
+.blog-pet-sway {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 92%;
+}
+
+.blog-pet-figure {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.blog-pet-figure img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  /* 多层投影：接触阴影 + 环境阴影，增强立体感 */
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 12px 20px rgba(0, 0, 0, 0.22));
+}
+
+.blog-pet-pet:hover {
+  --pet-scale: 1.03;
+}
+
+/* 地面接触阴影 */
+.blog-pet-ground {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  width: 62%;
+  height: 9%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.3),
+    rgba(0, 0, 0, 0) 70%
+  );
+  filter: blur(3px);
+  pointer-events: none;
+}
+
+html.dark .blog-pet-ground {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.6),
+    rgba(0, 0, 0, 0) 70%
+  );
+}
+
+/* ---------- 待机动画：呼吸 + 摇摆 + 上下浮动 ---------- */
+.blog-pet-pet.is-animated .blog-pet-sway {
+  animation: blog-pet-sway 6.4s ease-in-out infinite;
+}
+
+.blog-pet-pet.is-animated .blog-pet-figure {
+  animation: blog-pet-bob 4.4s ease-in-out infinite;
+}
+
+.blog-pet-pet.is-animated .blog-pet-figure img {
+  animation: blog-pet-breathe 3.6s ease-in-out infinite;
+  transform-origin: 50% 88%;
+}
+
+@keyframes blog-pet-sway {
+  0%,
+  100% {
+    transform: rotate(-1.8deg) translateY(0);
+  }
+  50% {
+    transform: rotate(1.8deg) translateY(-1px);
+  }
+}
+
+@keyframes blog-pet-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes blog-pet-breathe {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.012, 1.022);
+  }
+}
+
+/* ---------- 点击反应：弹跳 + 爱心 ---------- */
+.blog-pet-pet.is-happy .blog-pet-sway {
+  animation: blog-pet-hop 0.62s ease-in-out;
+}
+
+@keyframes blog-pet-hop {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  30% {
+    transform: translateY(-14px) scale(1.05, 0.96);
+  }
+  55% {
+    transform: translateY(0) scale(0.97, 1.04);
+  }
+  75% {
+    transform: translateY(-6px) scale(1.02, 0.99);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+.blog-pet-hearts {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.blog-pet-hearts i {
+  font-style: normal;
+  font-size: 16px;
+  color: #f43f5e;
+  text-shadow: 0 2px 6px rgba(244, 63, 94, 0.4);
+  animation: blog-pet-heart 0.9s ease-out forwards;
+}
+
+.blog-pet-hearts i:nth-child(2) {
+  font-size: 13px;
+  animation-delay: 0.08s;
+}
+
+.blog-pet-hearts i:nth-child(3) {
+  font-size: 15px;
+  animation-delay: 0.16s;
+}
+
+@keyframes blog-pet-heart {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.6);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(1.15);
+  }
+}
+
+/* ---------- 散步 ---------- */
+.blog-pet-pet.is-walking .blog-pet-figure {
+  animation: blog-pet-step 0.34s ease-in-out infinite;
+}
+
+.blog-pet-pet.is-walking .blog-pet-sway {
+  animation: blog-pet-walk-sway 1.5s ease-in-out;
+}
+
+@keyframes blog-pet-step {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(2deg);
+  }
+}
+
+@keyframes blog-pet-walk-sway {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(3deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+/* ---------- 打瞌睡 ---------- */
+.blog-pet-pet.is-sleepy .blog-pet-figure {
+  animation-duration: 7.5s;
+}
+
+.blog-pet-pet.is-sleepy .blog-pet-sway {
+  animation-duration: 9s;
+}
+
+.blog-pet-zzz {
+  position: absolute;
+  right: 2px;
+  top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9ca3af;
+  pointer-events: none;
+  animation: blog-pet-zzz 2.8s ease-in-out infinite;
+}
+
+@keyframes blog-pet-zzz {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(2px);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-pet-pet,
+  .blog-pet-tilt,
+  .blog-pet-sway,
+  .blog-pet-figure,
+  .blog-pet-figure img {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- 自动气泡 ---------- */
+.blog-pet-bubble {
+  position: fixed;
+  z-index: 56;
+  box-sizing: border-box;
+  width: 236px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+  font-size: 13px;
+  line-height: 1.6;
+  animation: blog-pet-fade 0.18s ease-out;
+}
+
+@keyframes blog-pet-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.blog-pet-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  background: inherit;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  transform: rotate(45deg);
+}
+
+.blog-pet-bubble.is-below::after {
+  bottom: auto;
+  top: -7px;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.blog-pet-bubble-text {
+  margin: 0 16px 0 0;
+  word-break: break-word;
+}
+
+.blog-pet-bubble-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.blog-pet-bubble-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #4b5563;
+}
+
+.blog-pet-bubble-link {
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #4f46e5;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.blog-pet-bubble-link:hover {
+  text-decoration: underline;
+}
+
+/* ---------- 右键菜单 ---------- */
+.blog-pet-menu {
+  position: fixed;
+  z-index: 80;
+  min-width: 200px;
+  max-width: 240px;
+  padding: 6px;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1f2937;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.18);
+  font-size: 13px;
+  animation: blog-pet-fade 0.12s ease-out;
+}
+
+.blog-pet-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.blog-pet-menu-item:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.blog-pet-menu-item.is-danger {
+  color: #dc2626;
+}
+
+.blog-pet-menu-state {
+  color: #9ca3af;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.blog-pet-menu-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 10px;
+}
+
+.blog-pet-menu-row-label {
+  color: #6b7280;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.blog-pet-menu-segment {
+  display: flex;
+  gap: 4px;
+}
+
+.blog-pet-menu-segment-btn {
+  padding: 2px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: transparent;
+  color: #6b7280;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.blog-pet-menu-segment-btn.is-active {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: #ffffff;
+}
+
+/* ---------- 悬浮对话框 ---------- */
+.blog-pet-dialog {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  max-height: 460px;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  font-size: 13px;
+  animation: blog-pet-fade 0.16s ease-out;
+}
+
+.blog-pet-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.blog-pet-dialog-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.blog-pet-dialog-title strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.blog-pet-dialog-title span {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.blog-pet-dialog-close {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.blog-pet-dialog-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #4b5563;
+}
+
+.blog-pet-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.blog-pet-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.blog-pet-message {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #374151;
+  line-height: 1.55;
+  word-break: break-word;
+  max-width: 92%;
+}
+
+.blog-pet-message.is-pet {
+  align-self: flex-start;
+}
+
+.blog-pet-message.is-user {
+  align-self: flex-end;
+  background: #6366f1;
+  color: #ffffff;
+  max-width: 85%;
+}
+
+.blog-pet-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blog-pet-result-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #ffffff;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.blog-pet-result-card:hover {
+  border-color: #a5b4fc;
+  background: #f8fafc;
+}
+
+.blog-pet-result-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #111827;
+}
+
+.blog-pet-result-summary {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.blog-pet-result-meta {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.blog-pet-hint {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.blog-pet-hint.is-error {
+  color: #b45309;
+}
+
+.blog-pet-quick {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px;
+  border-top: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+.blog-pet-quick button {
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.blog-pet-quick button:hover:not(:disabled) {
+  border-color: #c7d2fe;
+  background: #eef2ff;
+}
+
+.blog-pet-quick button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.blog-pet-input {
+  display: flex;
+  gap: 6px;
+  padding: 8px 12px 12px;
+  flex-shrink: 0;
+}
+
+.blog-pet-input input {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+.blog-pet-input input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+}
+
+.blog-pet-input button {
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #6366f1;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.blog-pet-input button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- 恢复入口 ---------- */
+.blog-pet-restore {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 55;
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.blog-pet-restore:hover {
+  border-color: #a5b4fc;
+  color: #4f46e5;
+}
+
+/* ---------- 深色主题 ---------- */
+html.dark .blog-pet-bubble,
+html.dark .blog-pet-menu,
+html.dark .blog-pet-dialog,
+html.dark .blog-pet-restore {
+  background: #111827;
+  color: #e5e7eb;
+  border-color: #374151;
+}
+
+html.dark .blog-pet-bubble::after {
+  border-color: #374151;
+}
+
+html.dark .blog-pet-bubble-close:hover,
+html.dark .blog-pet-dialog-close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #d1d5db;
+}
+
+html.dark .blog-pet-message {
+  background: #1f2937;
+  color: #e5e7eb;
+}
+
+html.dark .blog-pet-message.is-user {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+html.dark .blog-pet-result-card {
+  background: #0f172a;
+  border-color: #374151;
+}
+
+html.dark .blog-pet-result-card:hover {
+  background: #1e293b;
+  border-color: #6366f1;
+}
+
+html.dark .blog-pet-result-title {
+  color: #f3f4f6;
+}
+
+html.dark .blog-pet-result-summary,
+html.dark .blog-pet-hint {
+  color: #9ca3af;
+}
+
+html.dark .blog-pet-bubble-link {
+  color: #a5b4fc;
+}
+
+html.dark .blog-pet-dialog-header,
+html.dark .blog-pet-quick {
+  border-color: #1f2937;
+}
+
+html.dark .blog-pet-quick button {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+html.dark .blog-pet-quick button:hover:not(:disabled) {
+  background: #312e81;
+  border-color: #6366f1;
+}
+
+html.dark .blog-pet-input input {
+  border-color: #374151;
+}
+
+html.dark .blog-pet-input input:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
+}
+
+html.dark .blog-pet-menu-row-label,
+html.dark .blog-pet-menu-state {
+  color: #9ca3af;
+}
+
+html.dark .blog-pet-menu-segment-btn {
+  border-color: #374151;
+  color: #d1d5db;
+}
+
+html.dark .blog-pet-menu-segment-btn.is-active {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: #ffffff;
+}
+
+html.dark .blog-pet-restore:hover {
+  border-color: #6366f1;
+  color: #a5b4fc;
+}
+
+/* ---------- 移动端适配 ---------- */
+@media (max-width: 640px) {
+  .blog-pet-dialog {
+    left: 12px !important;
+    right: 12px;
+    top: auto !important;
+    bottom: 12px;
+    width: auto !important;
+    max-height: 72vh;
+  }
+
+  .blog-pet-bubble {
+    width: 200px;
+  }
+
+  .blog-pet-menu {
+    min-width: 180px;
+  }
+}

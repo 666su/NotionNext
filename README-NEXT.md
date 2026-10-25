@@ -583,4 +583,64 @@ rediss://default:xxx@your-db.upstash.io:6379
 
 ---
 
-*最后更新：2026-09-21*
+## 🐾 博客桌宠（Blog Pet）
+
+### 功能概述
+
+官方 NotionNext 没有桌宠。本站新增一个常驻右下角的互动助手：
+
+- **角色**：戴墨镜的小猫，沿用博客头像（`public/images.jpg`）的毛色、墨镜与红项圈金铃铛
+- **生命感**：呼吸缩放 + 待机摇摆 + 视线跟随鼠标（3D 倾斜）、点击弹跳冒爱心、每隔 20–40 秒自己溜达一小步、75 秒无互动打瞌睡（Zzz）
+- **交互**：左键打开对话、**长按左键可直接拖动**（不必先开自由移动）、右键（移动端长按）打开功能菜单
+- **检索**：基于真实文章的本地关键词检索（标题 / 标签 / 分类 / 摘要加权），支持最新、随机、热门
+- **气泡**：无人交互时自动分享站内文章，可调速或关闭
+- **设置**：全部存 `localStorage`，刷新与换页后保持
+
+### 新增文件
+
+| 文件 | 作用 |
+|------|------|
+| `components/BlogPet/BlogPet.js` | 主控：挂载、位置、拖动、点击、气泡调度、设置 |
+| `components/BlogPet/BlogPetDialog.js` | 悬浮对话框、输入框、结果卡片、快捷查询 |
+| `components/BlogPet/BlogPetContextMenu.js` | 右键菜单（含气泡频率分段选择） |
+| `components/BlogPet/BlogPetBubble.js` | 自动气泡 |
+| `components/BlogPet/blogPetConfig.js` | 统一配置：素材、尺寸、间距、气泡时序、欢迎语 |
+| `components/BlogPet/blogPetSettings.js` | 默认值、校验、localStorage 读写 |
+| `components/BlogPet/blogPetSearch.js` | 文章索引、加权检索、最新/随机/榜单映射 |
+| `components/BlogPet/blogPetUtils.js` | 坐标夹紧、随机、纯文本、日期等工具 |
+| `pages/api/blog-pet/posts.js` | 文章索引接口（复用全站数据缓存，CDN 缓存 5 分钟） |
+| `styles/blogPet.css` | 全部样式，统一 `blog-pet-` 前缀，含深色主题与移动端 |
+| `public/blog-pet/catboy-idle.png` | 角色立绘（512×512，透明背景） |
+| `__tests__/components/blog-pet.test.js` | 组件交互测试（8 例） |
+| `__tests__/components/blog-pet-search.test.js` | 检索/设置/坐标测试（15 例） |
+
+修改文件：`pages/_app.js`（引入样式并全站挂载）。
+
+### 常用配置
+
+| 需求 | 改哪里 |
+|------|--------|
+| 关闭桌宠 | 环境变量 `NEXT_PUBLIC_BLOG_PET_ENABLE=false` |
+| 换角色图片 | 替换 `public/blog-pet/catboy-idle.png`，或改 `blogPetConfig.js` 的 `asset` |
+| 改显示尺寸 | `PET_CONFIG.size.desktop` / `.mobile` |
+| 改默认位置 | `PET_CONFIG.offset.right` / `.bottom` |
+| 改气泡频率 | 菜单里选「关闭 / 低频 / 标准」，或改 `PET_CONFIG.bubble.interval` |
+| 改首次气泡延迟 | `PET_CONFIG.bubble.firstDelay`（毫秒区间） |
+| 改待机动作幅度 | `styles/blogPet.css` 里的 `blog-pet-sway` / `blog-pet-bob` / `blog-pet-breathe` 关键帧 |
+| 改自己散步频率 | `PET_CONFIG.wander.interval`（毫秒区间）、`.range`（位移像素） |
+| 改打瞌睡时间 | `PET_CONFIG.idle.sleepAfter`（毫秒） |
+| 改欢迎语 | `PET_CONFIG.welcome` |
+
+### 后续接入大模型
+
+`blogPetSearch.js` 的 `searchPosts()` 是唯一检索入口；新增 `pages/api/blog-pet/ask.js`
+在服务端调用模型（密钥只放环境变量），把真实检索结果作为上下文传给模型，
+前端在 `runSearch()` 里改为优先请求该接口、失败时回退本地检索即可。
+
+### 测试
+
+```bash
+npx jest __tests__/components/blog-pet --ci --watchAll=false   # 23 例
+```
+
+*最后更新：2026-10-25*

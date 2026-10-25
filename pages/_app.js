@@ -5,6 +5,7 @@ import '@/styles/utility-patterns.css'
 // core styles shared by all of react-notion-x (required)
 import 'react-notion-x/src/styles.css' // 原版的react-notion-x
 import '@/styles/notion.css' //  重写部分notion样式
+import '@/styles/blogPet.css' // 桌宠样式（blog-pet- 前缀，独立命名）
 
 import useAdjustStyle from '@/hooks/useAdjustStyle'
 import { GlobalContextProvider } from '@/lib/global'
@@ -17,6 +18,7 @@ import ErrorHandler from '@/lib/utils/errorHandler'
 // 各种扩展插件 这个要阻塞引入
 import BLOG from '@/blog.config'
 import ExternalPlugins from '@/components/ExternalPlugins'
+import BlogPet from '@/components/BlogPet/BlogPet'
 import SEO from '@/components/SEO'
 import { zhCN } from '@clerk/localizations'
 import dynamic from 'next/dynamic'
@@ -90,6 +92,7 @@ const MyApp = ({ Component, pageProps }) => {
           <Component {...pageProps} />
         </GLayout>
         <ExternalPlugins {...pageProps} />
+        <BlogPet />
       </GlobalContextProvider>
     </AppErrorBoundary>
   )
