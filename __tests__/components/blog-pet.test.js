@@ -244,6 +244,18 @@ describe('Blog Pet 桌宠', () => {
     )
   })
 
+  test('刷新后会恢复上次拖动的位置', async () => {
+    window.localStorage.setItem(
+      PET_STORAGE_KEY,
+      JSON.stringify({ visible: true, position: { x: 400, y: 300 } })
+    )
+
+    render(<BlogPet />)
+    const pet = await screen.findByRole('button', { name: /小猫/ })
+    expect(pet.style.left).toBe('400px')
+    expect(pet.style.top).toBe('300px')
+  })
+
   test('记住上次关闭状态：默认读取本地设置', async () => {
     window.localStorage.setItem(
       PET_STORAGE_KEY,

@@ -108,9 +108,22 @@ export function BlogPet() {
 
   useEffect(() => {
     const loaded = loadSettings()
+    const initialViewport = getViewport()
+    const initialSize = getPetSize(initialViewport.width, PET_CONFIG.size)
     settingsRef.current = loaded
     setSettings(loaded)
-    setViewport(getViewport())
+    setViewport(initialViewport)
+    // 恢复上次保存的位置（并夹紧到当前视口内）
+    if (loaded.position) {
+      setPosition(
+        clampPosition(
+          loaded.position,
+          initialSize,
+          initialViewport,
+          PET_CONFIG.edge
+        )
+      )
+    }
     setReducedMotion(prefersReducedMotion())
     setMounted(true)
   }, [])
