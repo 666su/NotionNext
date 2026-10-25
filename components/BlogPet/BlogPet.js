@@ -303,8 +303,8 @@ export function BlogPet() {
         const centerY = rect.top + rect.height / 2
         const nx = Math.max(-1, Math.min(1, (event.clientX - centerX) / 320))
         const ny = Math.max(-1, Math.min(1, (event.clientY - centerY) / 320))
-        tilt.style.setProperty('--pet-ry', `${(nx * 12).toFixed(2)}deg`)
-        tilt.style.setProperty('--pet-rx', `${(-ny * 8).toFixed(2)}deg`)
+        tilt.style.setProperty('--pet-ry', `${(nx * 18).toFixed(2)}deg`)
+        tilt.style.setProperty('--pet-rx', `${(-ny * 12).toFixed(2)}deg`)
       })
     }
     window.addEventListener('pointermove', handleMove, { passive: true })
@@ -603,8 +603,8 @@ export function BlogPet() {
     if (!rect.width || !rect.height) return
     const nx = (event.clientX - rect.left) / rect.width - 0.5
     const ny = (event.clientY - rect.top) / rect.height - 0.5
-    el.style.setProperty('--pet-ry', `${(nx * 14).toFixed(2)}deg`)
-    el.style.setProperty('--pet-rx', `${(-ny * 10).toFixed(2)}deg`)
+    el.style.setProperty('--pet-ry', `${(nx * 18).toFixed(2)}deg`)
+    el.style.setProperty('--pet-rx', `${(-ny * 12).toFixed(2)}deg`)
   }
 
   const resetTilt = () => {
