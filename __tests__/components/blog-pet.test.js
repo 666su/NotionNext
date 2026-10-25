@@ -132,6 +132,27 @@ describe('Blog Pet 桌宠', () => {
     ).toBe('eating')
   })
 
+  test('右键只打开菜单，不会同时打开对话', async () => {
+    const pet = await renderPet()
+
+    fireEvent.contextMenu(pet)
+    // 右键抬手（button=2）不能被当成左键点击
+    act(() => {
+      pet.dispatchEvent(
+        new MouseEvent('pointerup', { bubbles: true, cancelable: true, button: 2 })
+      )
+    })
+
+    expect(await screen.findByRole('menu')).toBeTruthy()
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    // 关掉菜单后，左键仍能正常打开对话
+    fireEvent.keyDown(document, { key: 'Escape' })
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull())
+    clickPet(pet)
+    expect(await screen.findByRole('dialog')).toBeTruthy()
+  })
+
   test('鼠标长按左键即可拖动桌宠，无需先开自由移动', async () => {
     jest.useFakeTimers()
     const pet = await renderPet()

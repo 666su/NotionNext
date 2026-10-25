@@ -696,7 +696,8 @@ export function BlogPet() {
     }
   }
 
-  const handlePointerUp = () => {
+  /** 结束一次按下/拖动，清理临时样式 */
+  const finishInteraction = () => {
     clearLongPress()
     dragArmedRef.current = false
     const drag = dragRef.current
@@ -708,6 +709,16 @@ export function BlogPet() {
       el.classList.remove('is-drag-armed')
     }
     resetTilt()
+    return drag
+  }
+
+  const handlePointerUp = event => {
+    const drag = finishInteraction()
+
+    // 右键（或中键）抬手不能被当成“左键点击”，否则会和右键菜单同时打开
+    if (typeof event?.button === 'number' && event.button > 0) {
+      return
+    }
 
     if (suppressClickRef.current) {
       suppressClickRef.current = false
@@ -731,6 +742,10 @@ export function BlogPet() {
     }
   }
 
+  const handlePointerCancel = () => {
+    finishInteraction()
+  }
+
   const handlePointerLeave = () => {
     if (dragRef.current?.moved) return
     clearLongPress()
@@ -746,6 +761,9 @@ export function BlogPet() {
   const handleContextMenu = event => {
     event.preventDefault()
     event.stopPropagation()
+    // 右键只弹菜单：先把对话/气泡收起来，避免两层浮层叠在一起
+    setDialogOpen(false)
+    setBubble(null)
     setMenu({ open: true, x: event.clientX, y: event.clientY })
   }
 
@@ -840,7 +858,7 @@ export function BlogPet() {
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
           onPointerLeave={handlePointerLeave}
           onContextMenu={handleContextMenu}
           onKeyDown={handlePetKeyDown}
