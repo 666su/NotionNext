@@ -909,7 +909,7 @@ export function BlogPet() {
       <BlogPetContextMenu
         menu={menu}
         settings={settings}
-        live2dReady={live2dStatus === 'ready'}
+        live2dReady={live2dStatus === 'ready' && !!LIVE2D_CONFIG.parameters.glassesUp}
         onAction={handleMenuAction}
         onClose={() => setMenu(prev => ({ ...prev, open: false }))}
       />

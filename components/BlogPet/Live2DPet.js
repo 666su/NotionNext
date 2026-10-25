@@ -83,20 +83,18 @@ async function ensureSdk() {
   if (!window.PIXI) {
     await loadOneOf([vendor.pixi, cdn.pixi], scriptTimeout)
   }
-  if (!window.Live2DModel) {
+  if (!getLive2DModelCtor()) {
     await loadOneOf([vendor.display, cdn.display], scriptTimeout)
   }
-  if (!window.PIXI || !window.Live2DModel) {
+  if (!window.PIXI || !getLive2DModelCtor()) {
     throw new Error('Live2D SDK globals missing')
   }
 }
 
-function hasParam(coreModel, id) {
-  try {
-    return typeof coreModel?.setParameterValueById === 'function' && !!id
-  } catch {
-    return false
-  }
+/** CDN 版 pixi-live2d-display 把构造函数挂在 PIXI.live2d 下 */
+function getLive2DModelCtor() {
+  if (typeof window === 'undefined') return null
+  return window.Live2DModel || window.PIXI?.live2d?.Live2DModel || null
 }
 
 function setParam(coreModel, id, value) {
@@ -172,6 +170,16 @@ export const Live2DPet = forwardRef(function Live2DPet(
 
     const boot = async () => {
       try {
+        // 等首屏渲染完成后再加载模型与 SDK（纹理较大，避免拖慢首屏）
+        await new Promise(resolve => setTimeout(resolve, 600))
+        if (cancelled) return
+        if (
+          typeof document !== 'undefined' &&
+          document.visibilityState === 'hidden'
+        ) {
+          return
+        }
+
         // 先探测模型是否存在，不存在就不加载任何 SDK
         const probe = await fetch(LIVE2D_CONFIG.modelUrl, { method: 'HEAD' })
         if (!probe.ok) throw new Error(`model not found (${probe.status})`)
@@ -196,7 +204,8 @@ export const Live2DPet = forwardRef(function Live2DPet(
         })
         appRef.current = app
 
-        const model = await window.Live2DModel.from(LIVE2D_CONFIG.modelUrl, {
+        const Live2DModel = getLive2DModelCtor()
+        const model = await Live2DModel.from(LIVE2D_CONFIG.modelUrl, {
           autoInteract: false
         })
         if (cancelled) {
@@ -208,14 +217,19 @@ export const Live2DPet = forwardRef(function Live2DPet(
           return
         }
 
-        model.anchor.set(LIVE2D_CONFIG.anchor.x, LIVE2D_CONFIG.anchor.y)
-        const naturalWidth = model.width || 1
-        const naturalHeight = model.height || 1
+        // 按实际绘制边界缩放并底边居中（模型画布通常留有很大空白）
+        model.anchor.set(0, 0)
+        const bounds = model.getLocalBounds()
+        const naturalWidth = Math.max(bounds.width || 1, 1)
+        const naturalHeight = Math.max(bounds.height || 1, 1)
         const fitScale =
           (resolution * LIVE2D_CONFIG.fitRatio) /
           Math.max(naturalWidth, naturalHeight)
         model.scale.set(fitScale)
-        model.position.set(resolution / 2, resolution)
+        model.position.set(
+          resolution / 2 - (bounds.x + naturalWidth / 2) * fitScale,
+          resolution - (bounds.y + naturalHeight) * fitScale
+        )
         app.stage.addChild(model)
         modelRef.current = model
 
@@ -225,6 +239,18 @@ export const Live2DPet = forwardRef(function Live2DPet(
         // 视线跟随 + 呼吸 + 耳朵/尾巴轻微摆动
         tickerHandler = () => {
           const t = performance.now() / 1000
+
+          // 隐藏模型自带的草图/背景部件，只保留角色本体
+          for (const partId of LIVE2D_CONFIG.hiddenParts || []) {
+            try {
+              const index = core?.getPartIndex?.(partId)
+              if (typeof index === 'number' && index >= 0) {
+                core.setPartOpacityByIndex(index, 0)
+              }
+            } catch {
+              /* 模型没有该部件时忽略 */
+            }
+          }
           const state = stateRef.current
           const target = state.pointer
           state.angleX = (state.angleX || 0) + (target.x - (state.angleX || 0)) * 0.08
