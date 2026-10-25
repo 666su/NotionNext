@@ -596,7 +596,7 @@ rediss://default:xxx@your-db.upstash.io:6379
 - **交互**：左键打开对话、**长按左键可直接拖动**（不必先开自由移动）、右键（移动端长按）打开功能菜单
 - **检索**：基于真实文章的本地关键词检索（标题 / 标签 / 分类 / 摘要加权），支持最新、随机、热门
 - **气泡**：无人交互时自动分享站内文章，可调速或关闭
-- **Live2D**：已接入官方示例模型 **Hijiki（黑猫，© Live2D Inc.）**，真实物理动画、眨眼、视线跟随、待机动作；`NEXT_PUBLIC_BLOG_PET_LIVE2D_MODEL=tororo` 可切白猫；缺模型或运行时异常自动降级回精灵图
+- **Live2D（可选，默认关闭）**：运行时已接好，模型与运行时文件不随仓库分发；放好文件并设置 `NEXT_PUBLIC_BLOG_PET_LIVE2D=true` 即可启用，失败自动降级回精灵图
 - **设置**：全部存 `localStorage`，刷新与换页后保持
 
 ### 新增文件
@@ -624,10 +624,10 @@ rediss://default:xxx@your-db.upstash.io:6379
 | `docs/live2d/ARTIST_BRIEF.md` | 交给画师的分层 PSD 交接说明（画布/分层/补绘硬要求/验收） |
 | `docs/live2d/CUBISM_BINDING.md` | 交给建模师的 Cubism 绑定与导出方案 |
 | `scripts/blog-pet/check_psd_layers.py` | PSD 结构自检（图层是否齐全、画布与命名） |
-| `public/live2d/README.md` | 模型与运行时说明、授权与换模型步骤 |
-| `public/live2d/hijiki/` | Hijiki 黑猫模型（moc3 + 纹理 + 物理 + 动作，约 1.3 MB，默认） |
-| `public/live2d/tororo/` | Tororo 白猫模型（可选，环境变量切换） |
-| `public/live2d/vendor/` | 运行时：Cubism Core / PIXI 6 / pixi-live2d-display |
+| `public/live2d/README.md` | Live2D 可选接入说明（模型/运行时需自行放置） |
+
+
+
 | `__tests__/components/blog-pet.test.js` | 组件交互测试（13 例） |
 | `__tests__/components/blog-pet-search.test.js` | 检索/设置/坐标测试（15 例） |
 

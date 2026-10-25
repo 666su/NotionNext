@@ -10,7 +10,8 @@
  */
 
 export const LIVE2D_CONFIG = {
-  enabled: process.env.NEXT_PUBLIC_BLOG_PET_LIVE2D !== 'false',
+  // 默认关闭：模型与运行时不再随仓库分发，需要时放好文件并设为 true
+  enabled: process.env.NEXT_PUBLIC_BLOG_PET_LIVE2D === 'true',
 
   // Cubism 4 模型入口；NEXT_PUBLIC_BLOG_PET_LIVE2D_MODEL=tororo 可切回白猫
   modelUrl:
