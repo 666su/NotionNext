@@ -75,3 +75,7 @@ webpack-internal:/
 
 # 本地临时笔记
 notion page id.txt
+
+# 桌宠精灵图源文件（提交 webp，PNG/预览仅本地生成）
+/public/blog-pet/sprites/catboy-sprites.png
+/public/blog-pet/sprites/preview.png

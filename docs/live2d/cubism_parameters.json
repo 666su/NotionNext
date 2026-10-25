@@ -1,0 +1,239 @@
+{
+  "model_name": "GreyWhiteSunglassesCat",
+  "version": "0.1-design-spec",
+  "note": "Design proposal only. Parameter IDs can be adapted to team conventions. Not exported from Cubism Editor.",
+  "parameters": [
+    {
+      "id": "ParamAngleX",
+      "name_zh": "头部左右转动",
+      "min": -30,
+      "max": 30,
+      "default": 0,
+      "binding": "头部、脸颊、耳朵、眼睛、墨镜；需要正面与侧向关键形"
+    },
+    {
+      "id": "ParamAngleY",
+      "name_zh": "头部上下转动",
+      "min": -20,
+      "max": 20,
+      "default": 0,
+      "binding": "头部与口鼻透视、耳根、墨镜角度"
+    },
+    {
+      "id": "ParamAngleZ",
+      "name_zh": "头部倾斜",
+      "min": -15,
+      "max": 15,
+      "default": 0,
+      "binding": "头部整体旋转感、耳朵与配饰补偿"
+    },
+    {
+      "id": "ParamBodyAngleX",
+      "name_zh": "身体左右摆动",
+      "min": -10,
+      "max": 10,
+      "default": 0,
+      "binding": "身体、胸口、前爪；幅度小于头部"
+    },
+    {
+      "id": "ParamBodyAngleZ",
+      "name_zh": "身体倾斜",
+      "min": -8,
+      "max": 8,
+      "default": 0,
+      "binding": "身体与尾巴根部"
+    },
+    {
+      "id": "ParamEyeLOpen",
+      "name_zh": "左眼开合",
+      "min": 0,
+      "max": 1,
+      "default": 1,
+      "binding": "左眼眼白、虹膜、瞳孔、高光、上眼睑"
+    },
+    {
+      "id": "ParamEyeROpen",
+      "name_zh": "右眼开合",
+      "min": 0,
+      "max": 1,
+      "default": 1,
+      "binding": "右眼眼白、虹膜、瞳孔、高光、上眼睑"
+    },
+    {
+      "id": "ParamEyeBallX",
+      "name_zh": "视线左右",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "binding": "左右虹膜与瞳孔同步偏移"
+    },
+    {
+      "id": "ParamEyeBallY",
+      "name_zh": "视线上下",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "binding": "左右虹膜与瞳孔同步偏移"
+    },
+    {
+      "id": "ParamMouthOpenY",
+      "name_zh": "嘴巴开合",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "binding": "闭嘴/张嘴形态；可追加舌头与口腔"
+    },
+    {
+      "id": "ParamMouthForm",
+      "name_zh": "嘴型情绪",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "binding": "委屈、平静、微笑等嘴角形态"
+    },
+    {
+      "id": "ParamGlassesUp",
+      "name_zh": "墨镜推起",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "binding": "0=正常佩戴；1=推至额头；需镜框、镜片、镜腿与额头补绘"
+    },
+    {
+      "id": "ParamEarL",
+      "name_zh": "左耳动作",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "binding": "左耳独立旋转/压耳/轻抖"
+    },
+    {
+      "id": "ParamEarR",
+      "name_zh": "右耳动作",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "binding": "右耳独立旋转/压耳/轻抖"
+    },
+    {
+      "id": "ParamTail",
+      "name_zh": "尾巴摆动",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "binding": "尾巴网格与尾尖；配合物理延迟"
+    },
+    {
+      "id": "ParamBreath",
+      "name_zh": "呼吸",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "binding": "胸口与腹部轻微起伏"
+    },
+    {
+      "id": "ParamBell",
+      "name_zh": "铃铛摆动",
+      "min": -1,
+      "max": 1,
+      "default": 0,
+      "binding": "铃铛主体与高光；建议物理驱动"
+    },
+    {
+      "id": "ParamPawL",
+      "name_zh": "左前爪反馈",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "binding": "点击反馈时轻抬左前爪"
+    },
+    {
+      "id": "ParamPawR",
+      "name_zh": "右前爪反馈",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "binding": "点击反馈时轻抬右前爪"
+    },
+    {
+      "id": "ParamMood",
+      "name_zh": "表情状态",
+      "min": 0,
+      "max": 1,
+      "default": 0,
+      "binding": "可选自定义表情混合；也可改用 Motion/Expression"
+    }
+  ],
+  "physics_groups": [
+    {
+      "id": "Physics_Ears",
+      "inputs": [
+        "ParamAngleX",
+        "ParamAngleY",
+        "ParamEarL",
+        "ParamEarR"
+      ],
+      "outputs": [
+        "ParamEarL",
+        "ParamEarR"
+      ],
+      "notes": "小幅度、快速衰减，避免抖动"
+    },
+    {
+      "id": "Physics_Tail",
+      "inputs": [
+        "ParamBodyAngleX",
+        "ParamBodyAngleZ",
+        "ParamTail"
+      ],
+      "outputs": [
+        "ParamTail"
+      ],
+      "notes": "延迟摆动，尾尖幅度略大于根部"
+    },
+    {
+      "id": "Physics_Bell",
+      "inputs": [
+        "ParamBodyAngleX",
+        "ParamBodyAngleZ",
+        "ParamBell"
+      ],
+      "outputs": [
+        "ParamBell"
+      ],
+      "notes": "短小摆幅，避免穿过胸口"
+    },
+    {
+      "id": "Physics_Breath",
+      "inputs": [
+        "ParamBreath"
+      ],
+      "outputs": [
+        "ParamBreath"
+      ],
+      "notes": "低频周期，胸腹变形幅度轻微"
+    }
+  ],
+  "suggested_motions": [
+    {
+      "file": "Idle.motion3.json",
+      "purpose": "待机呼吸、耳朵微动、尾巴慢摆"
+    },
+    {
+      "file": "GlassesUp.motion3.json",
+      "purpose": "推起墨镜并露出眼睛，停留片刻后可复位"
+    },
+    {
+      "file": "TapReaction.motion3.json",
+      "purpose": "点击反馈、眨眼或抬爪"
+    },
+    {
+      "file": "Happy.motion3.json",
+      "purpose": "开心表情，耳朵抬起、尾巴摆动"
+    },
+    {
+      "file": "Sleep.motion3.json",
+      "purpose": "闭眼或眯眼、呼吸放慢"
+    }
+  ]
+}

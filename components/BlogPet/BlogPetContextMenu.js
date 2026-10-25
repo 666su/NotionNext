@@ -13,7 +13,13 @@ const FREQUENCY_LABELS = [
   { key: 'standard', label: '标准' }
 ]
 
-export function BlogPetContextMenu({ menu, settings, onAction, onClose }) {
+export function BlogPetContextMenu({
+  menu,
+  settings,
+  live2dReady,
+  onAction,
+  onClose
+}) {
   const menuRef = useRef(null)
   const [pos, setPos] = useState({ left: menu.x, top: menu.y })
 
@@ -70,6 +76,38 @@ export function BlogPetContextMenu({ menu, settings, onAction, onClose }) {
       >
         <span>打开对话</span>
         <span className='blog-pet-menu-state'>↗</span>
+      </button>
+
+      {live2dReady && (
+        <button
+          type='button'
+          role='menuitem'
+          className='blog-pet-menu-item'
+          onClick={() => onAction('glasses')}
+        >
+          <span>墨镜上推</span>
+          <span className='blog-pet-menu-state'>⇧</span>
+        </button>
+      )}
+
+      <button
+        type='button'
+        role='menuitem'
+        className='blog-pet-menu-item'
+        onClick={() => onAction('fireworks')}
+      >
+        <span>看烟花</span>
+        <span className='blog-pet-menu-state'>🎆</span>
+      </button>
+
+      <button
+        type='button'
+        role='menuitem'
+        className='blog-pet-menu-item'
+        onClick={() => onAction('feed')}
+      >
+        <span>喂小鱼干</span>
+        <span className='blog-pet-menu-state'>🐟</span>
       </button>
 
       {toggleItem('freeMove', '自由移动', settings.freeMove)}

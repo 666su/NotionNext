@@ -34,6 +34,10 @@ import {
 import BlogPetBubble from './BlogPetBubble'
 import BlogPetContextMenu from './BlogPetContextMenu'
 import BlogPetDialog from './BlogPetDialog'
+import Live2DPet from './Live2DPet'
+import PetEffects from './PetEffects'
+import SpritePet from './SpritePet'
+import { LIVE2D_CONFIG } from './live2dConfig'
 
 export function BlogPet() {
   const router = useRouter()
@@ -53,6 +57,11 @@ export function BlogPet() {
   const [postsError, setPostsError] = useState(false)
   const [mood, setMood] = useState('idle') // idle | happy | sleepy
   const [walking, setWalking] = useState(false)
+  const [live2dStatus, setLive2dStatus] = useState('unavailable') // unavailable | ready
+  const [live2dActive, setLive2dActive] = useState(false)
+  const [action, setAction] = useState(null) // null | fireworks | eating
+  const actionTimerRef = useRef(null)
+  const live2dRef = useRef(null)
   const messagesRef = useRef([])
   const moodTimerRef = useRef(null)
   const wanderTimerRef = useRef(null)
@@ -127,6 +136,33 @@ export function BlogPet() {
     }
   }, [mounted])
 
+  // ---------- Live2D：模型存在则启用，否则保持静态立绘 ----------
+  useEffect(() => {
+    if (!mounted || !LIVE2D_CONFIG.enabled) return undefined
+    let cancelled = false
+    const probe = async () => {
+      try {
+        const response = await fetch(LIVE2D_CONFIG.modelUrl, { method: 'HEAD' })
+        if (!cancelled && response.ok) setLive2dStatus('ready')
+      } catch {
+        // 模型不存在时静默降级
+      }
+    }
+    probe()
+    return () => {
+      cancelled = true
+    }
+  }, [mounted])
+
+  const handleLive2DReady = useCallback(() => {
+    setLive2dActive(true)
+    setLive2dStatus('ready')
+  }, [])
+  const handleLive2DUnavailable = useCallback(() => {
+    setLive2dActive(false)
+    setLive2dStatus('unavailable')
+  }, [])
+
   // ---------- 生命感：唤醒、开心、困倦、自己散步 ----------
   const wake = useCallback(() => {
     lastInteractionRef.current = Date.now()
@@ -139,6 +175,26 @@ export function BlogPet() {
     clearTimeout(moodTimerRef.current)
     moodTimerRef.current = setTimeout(() => setMood('idle'), 900)
   }, [])
+
+  // 小剧场：看烟花 / 吃小鱼干
+  const triggerAction = useCallback(
+    kind => {
+      wake()
+      setAction(kind)
+      setBubble(null)
+      clearTimeout(actionTimerRef.current)
+      const duration =
+        kind === 'fireworks'
+          ? PET_CONFIG.actions.fireworksDuration
+          : PET_CONFIG.actions.eatingDuration
+      actionTimerRef.current = setTimeout(() => {
+        setAction(null)
+        // 吃完小鱼干开心一下
+        if (kind === 'eating') flashHappy()
+      }, duration)
+    },
+    [wake, flashHappy]
+  )
 
   // 长时间无人互动 -> 打瞌睡
   useEffect(() => {
@@ -224,6 +280,7 @@ export function BlogPet() {
       clearTimeout(moodTimerRef.current)
       clearTimeout(wanderTimerRef.current)
       clearTimeout(walkTimerRef.current)
+      clearTimeout(actionTimerRef.current)
       clearInterval(sleepTimerRef.current)
     },
     []
@@ -669,6 +726,7 @@ export function BlogPet() {
       setDialogOpen(false)
     } else {
       flashHappy()
+      live2dRef.current?.playTap?.()
       openDialog()
     }
   }
@@ -725,6 +783,15 @@ export function BlogPet() {
         updateSettings({ position: next })
         break
       }
+      case 'glasses':
+        live2dRef.current?.toggleGlasses?.()
+        break
+      case 'fireworks':
+        triggerAction('fireworks')
+        break
+      case 'feed':
+        triggerAction('eating')
+        break
       case 'about':
         setMenu(prev => ({ ...prev, open: false }))
         setDialogOpen(true)
@@ -779,20 +846,29 @@ export function BlogPet() {
           onKeyDown={handlePetKeyDown}
           onDragStart={event => event.preventDefault()}
         >
-          <span className='blog-pet-tilt' ref={tiltRef}>
-            <span className='blog-pet-sway'>
-              <span className='blog-pet-figure'>
-                <img
-                  src={PET_CONFIG.asset}
-                  alt={PET_CONFIG.assetAlt}
-                  draggable={false}
-                  onError={event => {
-                    event.currentTarget.style.display = 'none'
-                  }}
-                />
-              </span>
-            </span>
+          {live2dStatus === 'ready' ? (
+            <Live2DPet
+              ref={live2dRef}
+              size={petSize}
+              onReady={handleLive2DReady}
+              onUnavailable={handleLive2DUnavailable}
+            />
+          ) : null}
+          <span
+            className='blog-pet-tilt'
+            ref={tiltRef}
+            style={live2dActive ? { display: 'none' } : undefined}
+          >
+            <SpritePet
+              animate={animationOn}
+              mood={mood}
+              walking={walking}
+              searching={searching}
+              dialogOpen={dialogOpen}
+              action={action}
+            />
           </span>
+          <PetEffects action={action} />
           <span className='blog-pet-ground' aria-hidden='true' />
           {mood === 'happy' && (
             <span className='blog-pet-hearts' aria-hidden='true'>
@@ -833,6 +909,7 @@ export function BlogPet() {
       <BlogPetContextMenu
         menu={menu}
         settings={settings}
+        live2dReady={live2dStatus === 'ready'}
         onAction={handleMenuAction}
         onClose={() => setMenu(prev => ({ ...prev, open: false }))}
       />

@@ -32,6 +32,8 @@
 
 /* 跟随鼠标的 3D 倾斜 */
 .blog-pet-tilt {
+  position: relative;
+  z-index: 1;
   display: block;
   width: 100%;
   height: 100%;
@@ -53,6 +55,25 @@
   display: block;
   width: 100%;
   height: 100%;
+}
+
+/* Live2D 画布：交给 SDK 渲染，交互事件仍由外层按钮处理 */
+.blog-pet-live2d-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* 动作帧精灵图：一帧一张，用 background-position 切换 */
+.blog-pet-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 12px 20px rgba(0, 0, 0, 0.22));
 }
 
 .blog-pet-figure img {
@@ -824,5 +845,244 @@ html.dark .blog-pet-restore:hover {
 
   .blog-pet-menu {
     min-width: 180px;
+  }
+}
+
+/* ---------- 小剧场特效：看烟花 / 吃小鱼干 ---------- */
+
+/* 夜空背景（看烟花时出现在桌宠身后） */
+.blog-pet-night {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 300px;
+  height: 300px;
+  margin: -180px 0 0 -150px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(2, 6, 23, 0.86) 0%,
+    rgba(2, 6, 23, 0.62) 42%,
+    rgba(2, 6, 23, 0) 72%
+  );
+  pointer-events: none;
+  z-index: 0;
+  animation: blog-pet-night 7s ease-in-out forwards;
+}
+
+@keyframes blog-pet-night {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  82% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.blog-pet-effect {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* 吃东西的鱼干要盖在立绘前面 */
+.blog-pet-effect.is-eating {
+  z-index: 2;
+}
+
+.blog-pet-firework {
+  position: absolute;
+  width: 0;
+  height: 0;
+  animation: blog-pet-fw 2.4s ease-out infinite;
+}
+
+.blog-pet-firework i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 14px 5px currentColor;
+  transform: rotate(var(--a));
+  animation: blog-pet-ray 1.8s ease-out infinite;
+}
+
+/* 爆炸中心的闪光 */
+.blog-pet-firework::after {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: -14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 70%);
+  animation: blog-pet-flash 1.4s ease-out infinite;
+}
+
+@keyframes blog-pet-flash {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  60% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+.blog-pet-firework.is-0 {
+  left: 2%;
+  top: -22%;
+  color: #fbbf24;
+}
+.blog-pet-firework.is-1 {
+  left: 86%;
+  top: -30%;
+  animation-delay: 0.6s;
+  color: #fb7185;
+}
+.blog-pet-firework.is-2 {
+  left: 52%;
+  top: -40%;
+  animation-delay: 1.2s;
+  color: #60a5fa;
+}
+.blog-pet-firework.is-3 {
+  left: 30%;
+  top: -12%;
+  animation-delay: 1.8s;
+  color: #c084fc;
+}
+
+/* 冲击波圆环，放大烟花的存在感 */
+.blog-pet-firework::before {
+  content: '';
+  position: absolute;
+  left: -26px;
+  top: -26px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: blog-pet-ring 1.8s ease-out infinite;
+}
+
+@keyframes blog-pet-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.25);
+  }
+  18% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes blog-pet-fw {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  8%,
+  62% {
+    opacity: 1;
+  }
+}
+
+@keyframes blog-pet-ray {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(0) scale(0.3);
+  }
+  15%,
+  65% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(var(--a)) translateY(-52px) scale(1);
+  }
+}
+
+.blog-pet-snack {
+  position: absolute;
+  right: 2px;
+  top: 20%;
+  width: 40px;
+  height: auto;
+  opacity: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  animation: blog-pet-snack 1.6s ease-in-out forwards;
+}
+
+@keyframes blog-pet-snack {
+  0% {
+    opacity: 0;
+    transform: translate(26px, -6px) rotate(16deg) scale(0.9);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(10px, 10px) rotate(8deg) scale(1);
+  }
+  62% {
+    opacity: 1;
+    transform: translate(-50px, 28px) rotate(-6deg) scale(0.62);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-56px, 32px) rotate(-12deg) scale(0.32);
+  }
+}
+
+.blog-pet-crumb {
+  position: absolute;
+  left: 46%;
+  top: 62%;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #f59e0b;
+  opacity: 0;
+  animation: blog-pet-crumb 1.2s ease-out 1.1s infinite;
+}
+
+.blog-pet-crumb.is-2 {
+  left: 40%;
+  animation-delay: 1.25s;
+}
+
+.blog-pet-crumb.is-3 {
+  left: 52%;
+  animation-delay: 1.4s;
+}
+
+@keyframes blog-pet-crumb {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(14px) scale(1);
   }
 }

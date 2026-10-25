@@ -590,28 +590,39 @@ rediss://default:xxx@your-db.upstash.io:6379
 官方 NotionNext 没有桌宠。本站新增一个常驻右下角的互动助手：
 
 - **角色**：戴墨镜的小猫，沿用博客头像（`public/images.jpg`）的毛色、墨镜与红项圈金铃铛
+- **动作帧**：13 帧精灵图（待机×2 / 开心 / 思考 / 困倦 / 走路×2 / 说话×2 / 仰望×2 / 吃东西×2），按情绪与操作自动切换
+- **小剧场**：「看烟花」出现夜空背景与四组彩色烟花，猫会仰望；「喂小鱼干」小鱼干飞向嘴边、咀嚼后冒爱心
 - **生命感**：呼吸缩放 + 待机摇摆 + 视线跟随鼠标（3D 倾斜）、点击弹跳冒爱心、每隔 20–40 秒自己溜达一小步、75 秒无互动打瞌睡（Zzz）
 - **交互**：左键打开对话、**长按左键可直接拖动**（不必先开自由移动）、右键（移动端长按）打开功能菜单
 - **检索**：基于真实文章的本地关键词检索（标题 / 标签 / 分类 / 摘要加权），支持最新、随机、热门
 - **气泡**：无人交互时自动分享站内文章，可调速或关闭
+- **Live2D**：模型文件就位后自动切换为 Live2D 渲染（参数驱动 + 视线跟随 + 墨镜上推），缺模型/缺运行时自动降级回精灵图
 - **设置**：全部存 `localStorage`，刷新与换页后保持
 
 ### 新增文件
 
 | 文件 | 作用 |
 |------|------|
-| `components/BlogPet/BlogPet.js` | 主控：挂载、位置、拖动、点击、气泡调度、设置 |
+| `components/BlogPet/BlogPet.js` | 主控：挂载、位置、拖动、点击、气泡调度、小剧场、设置 |
 | `components/BlogPet/BlogPetDialog.js` | 悬浮对话框、输入框、结果卡片、快捷查询 |
-| `components/BlogPet/BlogPetContextMenu.js` | 右键菜单（含气泡频率分段选择） |
+| `components/BlogPet/BlogPetContextMenu.js` | 右键菜单（含气泡频率分段、看烟花、喂小鱼干） |
 | `components/BlogPet/BlogPetBubble.js` | 自动气泡 |
-| `components/BlogPet/blogPetConfig.js` | 统一配置：素材、尺寸、间距、气泡时序、欢迎语 |
+| `components/BlogPet/SpritePet.js` | 动作帧精灵图渲染与序列切换 |
+| `components/BlogPet/PetEffects.js` | 小剧场特效：夜空烟花、小鱼干与碎屑 |
+| `components/BlogPet/Live2DPet.js` | Live2D 运行时：探测模型 → 加载 SDK → 渲染 → 失败降级 |
+| `components/BlogPet/live2dConfig.js` | Live2D 模型路径、运行时路径、参数 ID 映射 |
+| `components/BlogPet/blogPetConfig.js` | 统一配置：素材、尺寸、间距、气泡时序、动作帧序列 |
 | `components/BlogPet/blogPetSettings.js` | 默认值、校验、localStorage 读写 |
 | `components/BlogPet/blogPetSearch.js` | 文章索引、加权检索、最新/随机/榜单映射 |
 | `components/BlogPet/blogPetUtils.js` | 坐标夹紧、随机、纯文本、日期等工具 |
 | `pages/api/blog-pet/posts.js` | 文章索引接口（复用全站数据缓存，CDN 缓存 5 分钟） |
 | `styles/blogPet.css` | 全部样式，统一 `blog-pet-` 前缀，含深色主题与移动端 |
 | `public/blog-pet/catboy-idle.png` | 角色立绘（512×512，透明背景） |
-| `__tests__/components/blog-pet.test.js` | 组件交互测试（8 例） |
+| `public/blog-pet/sprites/catboy-sprites.webp` | 13 帧动作精灵图（162–233 KB） |
+| `scripts/blog-pet/generate_sprites.py` | 从立绘重新生成动作帧与精灵图 |
+| `docs/live2d/` | Live2D 制作规格（PSD 拆件清单、参数表、制作流程、接入说明） |
+| `public/live2d/README.md` | 模型与运行时文件放置说明 |
+| `__tests__/components/blog-pet.test.js` | 组件交互测试（13 例） |
 | `__tests__/components/blog-pet-search.test.js` | 检索/设置/坐标测试（15 例） |
 
 修改文件：`pages/_app.js`（引入样式并全站挂载）。
@@ -627,6 +638,11 @@ rediss://default:xxx@your-db.upstash.io:6379
 | 改气泡频率 | 菜单里选「关闭 / 低频 / 标准」，或改 `PET_CONFIG.bubble.interval` |
 | 改首次气泡延迟 | `PET_CONFIG.bubble.firstDelay`（毫秒区间） |
 | 改待机动作幅度 | `styles/blogPet.css` 里的 `blog-pet-sway` / `blog-pet-bob` / `blog-pet-breathe` 关键帧 |
+| 改动作帧 | 编辑 `blogPetConfig.js` 的 `sprite.sequences` / `sprite.fps`；帧图用 `python scripts/blog-pet/generate_sprites.py` 重新生成 |
+| 改小剧场时长 | `PET_CONFIG.actions.fireworksDuration` / `.eatingDuration`（毫秒） |
+| 改烟花/鱼干效果 | `styles/blogPet.css` 的 `blog-pet-firework` / `blog-pet-ray` / `blog-pet-snack` 关键帧 |
+| 启用 Live2D | 把模型放进 `public/live2d/grey-white-cat/`；运行时放 `public/live2d/vendor/`（见 `public/live2d/README.md`） |
+| 关闭 Live2D | 环境变量 `NEXT_PUBLIC_BLOG_PET_LIVE2D=false`，或删除模型 `model3.json` |
 | 改自己散步频率 | `PET_CONFIG.wander.interval`（毫秒区间）、`.range`（位移像素） |
 | 改打瞌睡时间 | `PET_CONFIG.idle.sleepAfter`（毫秒） |
 | 改欢迎语 | `PET_CONFIG.welcome` |

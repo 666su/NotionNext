@@ -42,13 +42,21 @@ const POSTS = [
 ]
 
 function mockFetchSuccess() {
-  global.fetch = jest.fn(() =>
-    Promise.resolve({
+  global.fetch = jest.fn((url, options) => {
+    // 测试环境没有 Live2D 模型，HEAD 探测返回 404 -> 走静态立绘
+    if (String(url).includes('.model3.json')) {
+      return Promise.resolve({
+        ok: false,
+        status: 404,
+        json: () => Promise.resolve({})
+      })
+    }
+    return Promise.resolve({
       ok: true,
       status: 200,
       json: () => Promise.resolve({ ok: true, posts: POSTS })
     })
-  )
+  })
 }
 
 async function renderPet() {
@@ -74,7 +82,29 @@ describe('Blog Pet 桌宠', () => {
 
   test('默认在页面渲染角色立绘', async () => {
     await renderPet()
-    expect(screen.getByAltText('戴墨镜的小猫男孩桌宠')).toBeTruthy()
+    expect(screen.getByRole('img', { name: '戴墨镜的小猫男孩桌宠' })).toBeTruthy()
+  })
+
+  test('没有 Live2D 模型时降级为静态立绘，不加载 SDK', async () => {
+    await renderPet()
+    expect(screen.getByRole('img', { name: '戴墨镜的小猫男孩桌宠' })).toBeTruthy()
+    expect(document.querySelector('.blog-pet-live2d-canvas')).toBeNull()
+    // 只探测过模型文件，没有去加载 pixi / cubism 脚本
+    const scripts = [...document.querySelectorAll('script[data-live2d]')]
+    expect(scripts).toHaveLength(0)
+  })
+
+  test('待机会按动作帧切换，不是一张静态图片', async () => {
+    await renderPet()
+    const sprite = document.querySelector('.blog-pet-sprite')
+    expect(sprite).toBeTruthy()
+    expect(sprite.getAttribute('data-sequence')).toBe('idle')
+
+    const first = sprite.getAttribute('data-frame')
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 700))
+    })
+    expect(sprite.getAttribute('data-frame')).not.toBe(first)
   })
 
   test('点击桌宠打开对话框并显示欢迎语', async () => {
@@ -82,6 +112,24 @@ describe('Blog Pet 桌宠', () => {
     clickPet(pet)
     expect(await screen.findByRole('dialog')).toBeTruthy()
     expect(screen.getByLabelText('搜索博客文章')).toBeTruthy()
+  })
+
+  test('右键菜单可以触发看烟花与喂小鱼干', async () => {
+    const pet = await renderPet()
+
+    fireEvent.contextMenu(pet)
+    fireEvent.click(await screen.findByText('看烟花'))
+    expect(document.querySelector('.blog-pet-effect.is-fireworks')).toBeTruthy()
+    expect(
+      document.querySelector('.blog-pet-sprite').getAttribute('data-sequence')
+    ).toBe('look')
+
+    fireEvent.contextMenu(pet)
+    fireEvent.click(await screen.findByText('喂小鱼干'))
+    expect(document.querySelector('.blog-pet-effect.is-eating')).toBeTruthy()
+    expect(
+      document.querySelector('.blog-pet-sprite').getAttribute('data-sequence')
+    ).toBe('eating')
   })
 
   test('鼠标长按左键即可拖动桌宠，无需先开自由移动', async () => {
@@ -171,7 +219,7 @@ describe('Blog Pet 桌宠', () => {
 
     fireEvent.click(restore)
     await waitFor(() =>
-      expect(screen.getByAltText('戴墨镜的小猫男孩桌宠')).toBeTruthy()
+      expect(screen.getByRole('img', { name: '戴墨镜的小猫男孩桌宠' })).toBeTruthy()
     )
   })
 
@@ -185,7 +233,7 @@ describe('Blog Pet 桌宠', () => {
     expect(
       await screen.findByRole('button', { name: '显示桌宠' })
     ).toBeTruthy()
-    expect(screen.queryByAltText('戴墨镜的小猫男孩桌宠')).toBeNull()
+    expect(screen.queryByRole('img', { name: '戴墨镜的小猫男孩桌宠' })).toBeNull()
   })
 
   test('无人交互时会自动冒出文章气泡', async () => {

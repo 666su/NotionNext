@@ -1,0 +1,53 @@
+﻿layer_id,group,description_zh,binding_intent,art_notes
+Canvas,Canvas,透明画布,不可动,建议 3000x3000 px；不包含白底
+Shadow,FX,地面淡阴影,可选,单独图层；网页也可用 CSS 阴影
+Tail_Base,Tail,尾巴底色,尾巴变形器,尾巴根部需被身体遮挡
+Tail_GreyPatch,Tail,尾巴灰色毛色块,尾巴变形器,按毛色形状分层，白尾尖另列
+Tail_WhiteTip,Tail,尾巴白色尾尖,尾巴变形器,与灰色尾巴有足够重叠
+Body_Base,Body,身体底色,身体变形器,背部与腹部转动时需补绘
+Body_BackGrey,Body,背部灰色区域,身体变形器,可与底色分层便于轻微扭动
+Chest_White,Body,白色胸口,身体/呼吸,留足腹部呼吸变形空间
+Belly_White,Body,白色腹部,呼吸,可与胸口合并或拆分
+Leg_Back_L,Body/Legs,左后腿,轻微变形,按角色正面视角定义左右
+Leg_Back_R,Body/Legs,右后腿,轻微变形,按角色正面视角定义左右
+Paw_Front_L,Body/Legs,左前爪,轻微变形,点击反馈可轻微抬爪
+Paw_Front_R,Body/Legs,右前爪,轻微变形,点击反馈可轻微抬爪
+Neck_Fill,Head/Body overlap,头颈遮挡补绘,头部转动,头部转动时不能露出透明缝
+Head_Base,Head,头部底色,头部变形器,需要左右转动的侧面补绘
+Head_Grey_Cap,Head,灰色头顶毛色,头部变形器,毛色边界保持自然
+Cheek_Grey_L,Head,左侧灰色脸颊斑,头部变形器,独立便于脸部透视
+Cheek_Grey_R,Head,右侧灰色脸颊斑,头部变形器,独立便于脸部透视
+Muzzle_White,Face,白色口鼻区,脸部变形器,保留胡须根部空间
+Nose,Face,粉色鼻头,小幅变形,独立图层
+Mouth_Closed,Face/Mouth,闭嘴形,嘴型参数,与张嘴形互补
+Mouth_Open,Face/Mouth,张嘴形/口腔,嘴型参数,可按需求添加舌头
+Whiskers_L,Face,左侧胡须,脸部轻微变形,避免转头时漂浮
+Whiskers_R,Face,右侧胡须,脸部轻微变形,避免转头时漂浮
+EyeWhite_L,Eyes,左眼眼白,眼睛参数,被墨镜遮挡但必须完整绘制
+EyeWhite_R,Eyes,右眼眼白,眼睛参数,被墨镜遮挡但必须完整绘制
+Iris_L,Eyes,左眼虹膜,眼球参数,单独控制视线
+Iris_R,Eyes,右眼虹膜,眼球参数,单独控制视线
+Pupil_L,Eyes,左眼瞳孔,眼球参数,单独控制视线
+Pupil_R,Eyes,右眼瞳孔,眼球参数,单独控制视线
+EyeHighlight_L,Eyes,左眼高光,眨眼/眼球参数,高光与眼球同步
+EyeHighlight_R,Eyes,右眼高光,眨眼/眼球参数,高光与眼球同步
+UpperLid_L,Eyes,左上眼睑,眨眼参数,建议有闭眼关键形
+UpperLid_R,Eyes,右上眼睑,眨眼参数,建议有闭眼关键形
+EarOuter_L,Ears,左耳灰色外耳,耳朵变形器,独立旋转/压耳
+EarInner_L,Ears,左耳粉色内耳,耳朵变形器,与外耳有重叠
+EarOuter_R,Ears,右耳灰色外耳,耳朵变形器,独立旋转/压耳
+EarInner_R,Ears,右耳粉色内耳,耳朵变形器,与外耳有重叠
+Glasses_Frame,Sunglasses,墨镜镜框,墨镜上推参数,整体与镜片分别可微调
+Glasses_Lens_L,Sunglasses,左镜片,墨镜上推参数,深色透明/不透明按美术设定
+Glasses_Lens_R,Sunglasses,右镜片,墨镜上推参数,深色透明/不透明按美术设定
+Glasses_Bridge,Sunglasses,鼻梁连接处,墨镜上推参数,注意中间变形
+Glasses_Arm_L,Sunglasses,左镜腿,墨镜上推参数,需要耳侧遮挡关系
+Glasses_Arm_R,Sunglasses,右镜腿,墨镜上推参数,需要耳侧遮挡关系
+Glasses_Highlight_L,Sunglasses,左镜片反光,墨镜上推参数,高光独立，跟随镜片
+Glasses_Highlight_R,Sunglasses,右镜片反光,墨镜上推参数,高光独立，跟随镜片
+Forehead_Fill,Head/Glasses overlap,墨镜下方额头补绘,墨镜上推时显示,这是露眼动作的关键遮挡补绘
+Collar_Red,Accessory,红色项圈,身体轻微变形,头部/身体转动时需协调
+Bell_Base,Accessory,金色铃铛主体,铃铛物理,独立网格
+Bell_Highlight,Accessory,铃铛高光,铃铛物理,跟随主体但可有微小偏移
+Bell_Hole,Accessory,铃铛黑色开口,铃铛物理,与铃铛主体保持层级
+Sparkle_FX,FX,可选星光,动作/特效,建议网页粒子或独立动作，不必放进主 PSD

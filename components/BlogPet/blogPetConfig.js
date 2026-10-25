@@ -21,6 +21,36 @@ export const PET_CONFIG = {
   asset: '/blog-pet/catboy-idle.png',
   assetAlt: '戴墨镜的小猫男孩桌宠',
 
+  // 动作帧精灵图（由 scripts/blog-pet/generate_sprites.py 生成）
+  // 帧序：0 idle_a / 1 idle_b / 2 happy / 3 thinking / 4 sleepy
+  //       5 walk_a / 6 walk_b / 7 talk_a / 8 talk_b
+  //       9 look_a / 10 look_b（仰望看烟花） / 11 eat_a / 12 eat_b（吃东西）
+  sprite: {
+    src: '/blog-pet/sprites/catboy-sprites.webp',
+    cellSize: 320,
+    frameCount: 13,
+    sequences: {
+      idle: [0, 1],
+      happy: [2],
+      thinking: [3, 0],
+      talking: [7, 8],
+      sleepy: [4],
+      walking: [5, 6],
+      look: [9, 10],
+      eating: [11, 12]
+    },
+    fps: {
+      idle: 2,
+      happy: 1,
+      thinking: 3,
+      talking: 7,
+      sleepy: 1,
+      walking: 7,
+      look: 1.5,
+      eating: 6
+    }
+  },
+
   // 显示尺寸（px）：移动端自动缩小，避免遮挡内容
   size: { desktop: 112, mobile: 84 },
   // 默认位置：距视口右侧 / 底部
@@ -39,6 +69,11 @@ export const PET_CONFIG = {
     interval: [22000, 40000], // 自己走动的间隔区间（ms）
     range: 90, // 单次走动的最大位移（px）
     duration: 1500 // 走过去所需时间，与 CSS 过渡保持一致
+  },
+  // 小剧场动作：看烟花 / 吃东西
+  actions: {
+    fireworksDuration: 7000,
+    eatingDuration: 4200
   },
 
   // 悬浮对话框
