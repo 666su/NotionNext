@@ -33,3 +33,28 @@
 - `live2dcubismcore.min.js` 属 Live2D Cubism SDK 专有运行时，遵循 Live2D SDK 许可，
   **不受本仓库 MIT 许可覆盖**。
 - PIXI / pixi-live2d-display 为 MIT。
+
+## 模型交付自检
+
+拿到模型后先跑：
+
+```bash
+python scripts/blog-pet/check_live2d_model.py --dir public/live2d/cat_boss
+```
+
+会检查：`model3.json` 是否合法、moc3/纹理/物理/动作文件是否齐全、
+是否包含 `Idle` 与 `Tap` 动作组、是否配置了点击命中区（墨镜/项圈）、
+是否有眨眼参数组，并列出本站 runtime 需要的参数名。
+
+## 点击命中区约定
+
+模型 `model3.json` 里的 `HitAreas` 采用：
+
+```json
+"HitAreas": [
+  { "Name": "glasses", "Motion": ["click_glasses"] },
+  { "Name": "collar",  "Motion": ["click_collar"] }
+]
+```
+
+本站 runtime 会在点击命中时播放对应动作组；没有命中区则退化为打开对话。

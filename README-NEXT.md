@@ -624,6 +624,7 @@ rediss://default:xxx@your-db.upstash.io:6379
 | `docs/live2d/ARTIST_BRIEF.md` | 交给画师的分层 PSD 交接说明（画布/分层/补绘硬要求/验收） |
 | `docs/live2d/CUBISM_BINDING.md` | 交给建模师的 Cubism 绑定与导出方案 |
 | `scripts/blog-pet/check_psd_layers.py` | PSD 结构自检（图层是否齐全、画布与命名） |
+| `scripts/blog-pet/check_live2d_model.py` | Live2D 模型交付自检（文件/动作组/命中区/参数） |
 | `public/live2d/README.md` | Live2D 可选接入说明（模型/运行时需自行放置） |
 
 
