@@ -29,6 +29,10 @@ module.exports = {
   POST_PREVIEW_LINES: process.env.NEXT_PUBLIC_POST_POST_PREVIEW_LINES || 12, // 预览博客行数
   POST_RECOMMEND_COUNT: process.env.NEXT_PUBLIC_POST_RECOMMEND_COUNT || 6, // 推荐文章数量
   LATEST_POST_COUNT: process.env.NEXT_PUBLIC_LATEST_POST_COUNT || 6, // 最新文章数量
+  // 注意：这个值对首页/分类/标签页的裁剪不生效——这些页面调用
+  // siteConfig('POSTS_PER_PAGE', 12) 时，默认值 12 会覆盖 blog.config 里的值
+  // （见 lib/config.js 的特殊 key 分支）。系列分组已改为用全量列表（props.seriesPosts），
+  // 不再依赖它；但分页路由（/page/N）的页数计算读的是本文件的值，二者要一致。
   POSTS_PER_PAGE: process.env.NEXT_PUBLIC_POST_PER_PAGE || 12, // post counts per page
   POSTS_SORT_BY: process.env.NEXT_PUBLIC_POST_SORT_BY || 'notion', // 排序方式 'date'按时间,'notion'由notion控制
 

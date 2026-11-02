@@ -19,7 +19,7 @@ import { useSeriesColumns } from '..'
  * - 无 series 的文章保持原有样式
  */
 export const BlogListPage = props => {
-  const { page = 1, posts, postCount } = props
+  const { page = 1, posts, postCount, seriesPosts } = props
   const { locale, NOTION_CONFIG } = useGlobal()
   const router = useRouter()
   const totalPage = Math.ceil(
@@ -27,8 +27,11 @@ export const BlogListPage = props => {
   )
   const currentPage = +page
 
-  const showPrev = currentPage > 1
-  const showNext = page < totalPage
+  // 系列分组用未分页的全量列表（props.seriesPosts），
+  // 没有时退回本页 posts；这样分页裁剪不会让文章从系列卡片里消失
+  const usingFullSeriesList =
+    Array.isArray(seriesPosts) && seriesPosts.length > 0
+  const seriesSource = usingFullSeriesList ? seriesPosts : posts
   const pagePrefix = router.asPath
     .split('?')[0]
     .replace(/\/page\/[1-9]\d*/, '')
@@ -55,8 +58,13 @@ export const BlogListPage = props => {
   }
 
   // 分组
-  const { grouped, ungrouped } = groupPostsBySeries(posts || [])
+  const { grouped, ungrouped } = groupPostsBySeries(seriesSource || [])
   const hasSeries = grouped.length > 0
+
+  // 只有在「已用全量列表渲染」时才隐藏分页（否则会重复内容）；
+  // 普通分页页 /page/N 仍保留上一页、下一页
+  const showPrev = !usingFullSeriesList && currentPage > 1
+  const showNext = !usingFullSeriesList && page < totalPage
 
   return (
     <div className={`w-full ${showPageCover ? 'md:pr-2' : 'md:pr-12'} mb-12`}>
@@ -70,7 +78,7 @@ export const BlogListPage = props => {
       {/* ===== 移动端：系列手风琴列表 ===== */}
       <div id='posts-wrapper-mobile' className='md:hidden'>
         {hasSeries ? (
-          <MobileSeriesList posts={posts} />
+          <MobileSeriesList posts={seriesSource} />
         ) : (
           /* 无系列时移动端也用简洁列表 */
           <div className='space-y-2'>

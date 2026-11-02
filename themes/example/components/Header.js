@@ -11,10 +11,15 @@ import Announcement from './Announcement'
  * 移动端：汉堡菜单 + 搜索图标
  */
 export const Header = props => {
+  // 系列全集抽屉用未分页的全量列表，避免超出每页条数的文章从抽屉里消失
+  const seriesSource =
+    Array.isArray(props.seriesPosts) && props.seriesPosts.length > 0
+      ? props.seriesPosts
+      : props.posts
   return (
     <>
       {/* 移动端抽屉侧边栏 */}
-      <MobileDrawer posts={props.posts} notice={props.notice} />
+      <MobileDrawer posts={seriesSource} notice={props.notice} />
 
       <header className='sticky top-0 z-50 w-full border-b bg-gray-100/90 backdrop-blur dark:bg-zinc-900/90' style={{ '--menu-btn-top': '0.375rem' }}>
         <div className='mx-auto flex h-14 md:h-16 max-w-6xl items-center px-3 md:px-6 gap-2 md:gap-0 pl-12 md:pl-6'>

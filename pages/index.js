@@ -1,6 +1,7 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
 import {
+  attachSeriesPosts,
   cleanPostSummaries,
   fetchGlobalAllData,
   getPostBlocks
@@ -68,6 +69,9 @@ export async function getStaticProps(req) {
     page => page.type === 'Post' && page.status === 'Published'
   )
 
+  // 系列分组/时间线/抽屉要用全量列表，先留存一份再按分页裁剪 props.posts
+  const allPublishedPosts = props.posts
+
   // 处理分页
   const POST_LIST_STYLE = siteConfig(
     'POST_LIST_STYLE',
@@ -128,6 +132,8 @@ export async function getStaticProps(req) {
   if (!POST_LIST_PREVIEW) {
     props.posts = cleanPostSummaries(props.posts)
   }
+  // 分页裁掉的文章仍要出现在系列分组里
+  attachSeriesPosts(props, allPublishedPosts)
   props.latestPosts = cleanPostSummaries(props.latestPosts)
   delete props.allPages
 

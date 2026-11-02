@@ -1,6 +1,6 @@
 import BLOG from '@/blog.config'
 import { siteConfig } from '@/lib/config'
-import { fetchGlobalAllData } from '@/lib/db/SiteDataApi'
+import { attachSeriesPosts, fetchGlobalAllData } from '@/lib/db/SiteDataApi'
 import { DynamicLayout } from '@/themes/theme'
 
 /**
@@ -25,6 +25,9 @@ export async function getStaticProps({ params: { tag }, locale }) {
   // 处理文章页数
   props.postCount = props.posts.length
 
+  // 系列分组要用全量列表，先留存一份再按分页裁剪 props.posts
+  const allTagPosts = props.posts
+
   // 处理分页
   const POST_LIST_STYLE = siteConfig(
     'POST_LIST_STYLE',
@@ -39,6 +42,8 @@ export async function getStaticProps({ params: { tag }, locale }) {
       siteConfig('POSTS_PER_PAGE', 12, props?.NOTION_CONFIG)
     )
   }
+
+  attachSeriesPosts(props, allTagPosts)
 
   props.tag = tag
   delete props.allPages

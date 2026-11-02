@@ -63,6 +63,13 @@ const LayoutBase = props => {
   // 网站左右布局颠倒
   const LAYOUT_SIDEBAR_REVERSE = siteConfig('LAYOUT_SIDEBAR_REVERSE', false)
 
+  // 系列面板/系列抽屉要用未分页的全量文章列表，
+  // 否则本页被裁掉的文章不会出现在系列时间线和系列全集里
+  const seriesSource =
+    Array.isArray(props.seriesPosts) && props.seriesPosts.length > 0
+      ? props.seriesPosts
+      : props.posts
+
   return (
     <SeriesColumnsContext.Provider value={columnsCtx}>
       <div
@@ -86,9 +93,9 @@ const LayoutBase = props => {
           `}
           >
             {/* 新增文章系列展示功能：右侧系列面板（时间线+日历），DOM第一 → flex-row-reverse下显示在最右 */}
-            {!fullWidth && !post && props.posts && props.posts.length > 0 && (
+            {!fullWidth && !post && seriesSource && seriesSource.length > 0 && (
               <div className='hidden lg:block w-56 xl:w-64 flex-shrink-0 sticky top-20'>
-                <SeriesPanel posts={props.posts} />
+                <SeriesPanel posts={seriesSource} />
               </div>
             )}
 
