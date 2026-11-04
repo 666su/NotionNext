@@ -23,6 +23,99 @@
 
 ---
 
+## 2026-11-04 移动端抽屉接入 Notion 菜单、搜索改为悬浮面板
+
+### 背景
+
+博客线上使用 example 主题。此前 Notion 菜单（`type=Menu/SubMenu`）只在桌面顶部导航渲染，
+移动端左侧抽屉是写死的「回到首页 / 系列全集 / 关于我」；顶部搜索会跳转 `/search` 空白页并把
+文章列表替换掉；页脚 PoweredBy 仍指向官方仓库；系列页左上角有一行与标题重复的小系列名；
+内容不足一屏时页脚悬空。
+
+### 本次改动
+
+1. **移动端抽屉接入 Notion 菜单**
+   - 新增 `themes/example/components/navLinks.js`：统一桌面/移动端导航数据构建。
+     `CUSTOM_MENU=true` 时使用 `customMenu`，否则使用内置入口 + `customNav`；
+     `filterDrawerNavLinks` 过滤 `show=false` 及与抽屉固定入口（`/`、`/about`）重复的项。
+   - `MobileDrawer.js`：渲染一级/二级菜单；一级有子菜单时只负责展开/收起，无子菜单时直接跳转；
+     多个一级菜单可独立展开；二级菜单点击跳转并自动关闭抽屉；折叠面板保留动画并加
+     `aria-hidden` / `pointer-events-none`。
+   - `Header.js`：向 `MobileDrawer` 传递 `customMenu`、`customNav`。
+   - `MenuList.js`：改用 `navLinks.js` 共享逻辑，桌面端输出保持不变。
+   - 新增 `__tests__/themes/example/navLinks.test.js`（7 个用例）。
+
+2. **搜索改为悬浮面板**
+   - 新增 `themes/example/components/SearchOverlay.js`：居中悬浮面板 + 遮罩，按标题 / 摘要 /
+     标签 / 分类 / 系列即时过滤；点击结果跳转并关闭；支持 `Esc`、点击遮罩关闭；
+     打开时锁定背景滚动，关闭后恢复。
+   - `Header.js`：桌面 Search 框、移动端搜索图标、`Ctrl/Cmd + K` 均打开悬浮面板，不再跳转
+     `/search`。
+   - `/search` 页面仍然保留，但顶部导航不再链接到它。
+
+3. **系列页去掉重复的小系列名**：`index.js` 删除 `LayoutPostList` 中的 series 小标签，
+   仅保留大标题；分类页、标签页的小标签保持不变。
+
+4. **页脚链接指向个人仓库**：`components/PoweredBy.js` 支持 `href` 参数（默认仍为官方仓库，
+   其他主题不受影响）；`themes/example/components/Footer.js` 传入
+   `https://github.com/666su/NotionNext`。
+
+5. **页脚固定在页面底部**：`index.js` 根容器增加 `min-h-screen flex flex-col`，
+   `#container-inner` 增加 `flex-1`；内容不足一屏时页脚贴视口底部，长内容时保持在文档末尾。
+
+### Notion 数据变更（非代码）
+
+菜单库调整为：
+
+- 资源链接
+- 技术探索 → Cloudflare建站、软路由系列
+- AI与开源 → DeepSeek Harness、开源工具推荐
+- 关于我
+
+原模板菜单（日常生活、软件教程及其二级，共 10 条）改为 `Invisible`，未删除；
+写入前后备份见 `_project-ai/DELIVERABLES/notion-menu-backup-2026-11-04.json`
+与 `notion-menu-after-2026-11-04.json`。
+
+### 涉及文件
+
+**新增（3 个）**
+
+- `themes/example/components/navLinks.js` — 导航数据统一构建与抽屉过滤
+- `themes/example/components/SearchOverlay.js` — 悬浮搜索面板
+- `__tests__/themes/example/navLinks.test.js` — 导航数据单元测试
+
+**修改（6 个）**
+
+- `themes/example/components/Header.js` — 抽屉数据透传 + 悬浮搜索入口
+- `themes/example/components/MobileDrawer.js` — Notion 一级/二级菜单渲染
+- `themes/example/components/MenuList.js` — 改用共享导航数据
+- `themes/example/components/Footer.js` — 页脚链接指向个人仓库
+- `themes/example/index.js` — 删除系列小标题、修复页脚悬空
+- `components/PoweredBy.js` — 支持 `href` 参数
+
+### 验证
+
+- `npx jest __tests__/themes/example/navLinks.test.js`：7/7 通过。
+- ESLint：0 error（仅既有 hooks 提示）。
+- `next build`：55/55 静态页成功；生产模式实测抽屉菜单、悬浮搜索、系列页标题、
+  页脚链接与页脚贴底均正常。
+- 相关提交：`64bd8fd`（导航 / 搜索 / 页脚链接）、`38e4989`（页脚贴底）。
+
+### 上游冲突风险
+
+- **高** — `Header.js`、`MobileDrawer.js`、`MenuList.js`、`index.js`、`Footer.js` 均为
+  example 主题文件，上游更新可能覆盖；同步时需保留移动端菜单、悬浮搜索、系列标题删除、
+  页脚贴底等定制。
+- **中** — `components/PoweredBy.js` 新增了 `href` 参数，上游若改该组件需重新应用。
+- **低** — 新增文件与单元测试不涉及上游同名文件，冲突概率低。
+
+### 待处理
+
+- 系列页浏览器标签标题仍为「Jason的博客 | loading」，属于 SEO 组件对非文章页的旧回退逻辑
+  （`components/SEO.js` 的 default 分支），后续可补 `/series/[series]` 分支。
+
+---
+
 ## 2026-09-29 新增左侧排行榜与文章点赞功能
 
 ### 背景
