@@ -74,7 +74,7 @@ const LayoutBase = props => {
     <SeriesColumnsContext.Provider value={columnsCtx}>
       <div
         id='theme-example'
-        className={`${siteConfig('FONT_STYLE')} dark:text-gray-300  bg-white dark:bg-black scroll-smooth`}
+        className={`${siteConfig('FONT_STYLE')} min-h-screen flex flex-col dark:text-gray-300  bg-white dark:bg-black scroll-smooth`}
       >
         <Style />
 
@@ -84,7 +84,7 @@ const LayoutBase = props => {
         <TitleBar {...props} />
 
         {/* 主体 */}
-        <div id='container-inner' className='w-full relative z-10'>
+        <div id='container-inner' className='w-full flex-1 relative z-10'>
           <div
             id='container-wrapper'
             className={`relative mx-auto justify-center md:flex py-3 px-2
