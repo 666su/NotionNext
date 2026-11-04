@@ -169,7 +169,7 @@ const LayoutIndex = props => {
  * @returns
  */
 const LayoutPostList = props => {
-  const { category, tag, series } = props
+  const { category, tag } = props
 
   return (
     <>
@@ -182,13 +182,6 @@ const LayoutPostList = props => {
       )}
       {/* 显示标签 */}
       {tag && <div className='pb-12'>#{tag}</div>}
-      {/* 新增文章系列展示功能：显示系列名称 */}
-      {series && (
-        <div className='pb-12'>
-          <i className='mr-1 fas fa-layer-group' />
-          {series}
-        </div>
-      )}
 
       {siteConfig('POST_LIST_STYLE') === 'page' ? (
         <BlogListPage {...props} />

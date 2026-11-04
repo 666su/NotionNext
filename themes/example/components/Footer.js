@@ -16,7 +16,7 @@ export const Footer = props => {
             <BeiAnSite />
             <BeiAnGongAn />
           </div>
-          <PoweredBy />
+          <PoweredBy href='https://github.com/666su/NotionNext' />
         </div>
       </div>
     </footer>

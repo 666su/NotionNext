@@ -1,7 +1,9 @@
 import { siteConfig } from '@/lib/config'
 import SmartLink from '@/components/SmartLink'
+import { useCallback, useEffect, useState } from 'react'
 import { MenuList } from './MenuList'
 import { MobileDrawer } from './MobileDrawer'
+import { SearchOverlay } from './SearchOverlay'
 import { SettingsDropdown } from './SettingsDropdown'
 import Announcement from './Announcement'
 
@@ -11,6 +13,30 @@ import Announcement from './Announcement'
  * 移动端：汉堡菜单 + 搜索图标
  */
 export const Header = props => {
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  // 点击搜索弹出悬浮面板，不跳转页面
+  const openSearch = useCallback(() => setSearchOpen(true), [])
+  const closeSearch = useCallback(() => setSearchOpen(false), [])
+
+  // Ctrl/Cmd + K 快捷键打开搜索
+  useEffect(() => {
+    const onKeyDown = e => {
+      if ((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'k') {
+        e.preventDefault()
+        openSearch()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [openSearch])
+
+  // 悬浮搜索用未分页的全量列表，避免只能搜到首页第一页
+  const searchPosts =
+    Array.isArray(props.seriesPosts) && props.seriesPosts.length > 0
+      ? props.seriesPosts
+      : props.posts
+
   // 系列全集抽屉用未分页的全量列表，避免超出每页条数的文章从抽屉里消失
   const seriesSource =
     Array.isArray(props.seriesPosts) && props.seriesPosts.length > 0
@@ -19,7 +45,19 @@ export const Header = props => {
   return (
     <>
       {/* 移动端抽屉侧边栏 */}
-      <MobileDrawer posts={seriesSource} notice={props.notice} />
+      <MobileDrawer
+        posts={seriesSource}
+        notice={props.notice}
+        customMenu={props.customMenu}
+        customNav={props.customNav}
+      />
+
+      {/* 悬浮搜索面板 */}
+      <SearchOverlay
+        open={searchOpen}
+        onClose={closeSearch}
+        posts={searchPosts}
+      />
 
       <header className='sticky top-0 z-50 w-full border-b bg-gray-100/90 backdrop-blur dark:bg-zinc-900/90' style={{ '--menu-btn-top': '0.375rem' }}>
         <div className='mx-auto flex h-14 md:h-16 max-w-6xl items-center px-3 md:px-6 gap-2 md:gap-0 pl-12 md:pl-6'>
@@ -71,9 +109,11 @@ export const Header = props => {
               {/* 公告图标：点击跳转到公告文章页 */}
               <Announcement post={props.notice} />
 
-              {/* 搜索：桌面端完整搜索框 */}
-              <SmartLink
-                href='/search'
+              {/* 搜索：桌面端完整搜索框，聚焦首页内联搜索 */}
+              <button
+                type='button'
+                onClick={openSearch}
+                aria-label='搜索文章'
                 className='
                   hidden md:flex
                   items-center
@@ -116,16 +156,16 @@ export const Header = props => {
                 >
                   Ctrl K
                 </kbd>
-              </SmartLink>
+              </button>
 
-              {/* 搜索：移动端仅图标 */}
-              <SmartLink
-                href='/search'
+              {/* 搜索：移动端仅图标，同样聚焦首页内联搜索 */}
+              <button
+                type='button'
+                onClick={openSearch}
                 className='md:hidden text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition'
-                aria-label='搜索'
-              >
+                aria-label='搜索'>
                 <i className='fas fa-search'></i>
-              </SmartLink>
+              </button>
 
               {/* 设置按钮：桌面端与移动端均显示（字号+夜间模式+语言） */}
               <SettingsDropdown />
