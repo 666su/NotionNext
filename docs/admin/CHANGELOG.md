@@ -4,6 +4,28 @@
 
 ---
 
+## Phase 6.1 — Telegram 排障能力（2026-11-10）
+
+线上首次发送日报时报 `request_failed`，这个代号太笼统（既可能是网络不通，也可能是环境变量指错）。
+本阶段把"发不出去"拆成可操作的原因，并加一个不发消息的自检入口。
+
+| 改动 | 说明 |
+| --- | --- |
+| `lib/admin/telegram.js` | 新增 `getBotInfo()`（调 `getMe`，不发送消息）；`sendTelegram` 超时 10s→12s；失败细分 `timeout` / `dns_failed` / `connection_refused` / `connection_reset` / `tls_error` / `network_error`；`local_base_in_production` 直接拦下"生产环境仍指向本地桩"的误配 |
+| `pages/api/admin/notify/telegram.js` | 新增：`GET ?check=1` 返回机器人用户名与**实际请求域名**（不含 token）；`POST` 发一条测试消息（需 CSRF） |
+| `lib/admin/digest.js` | 配置状态增加 `baseHost` / `localBase`，让"请求打到哪"一眼可见 |
+| `pages/admin/digest.js` | 新增「测试连接」按钮；本地地址误配时页面顶部直接红字提示；发送失败展示 `detail` |
+| `tests/stub_services.py` | Telegram 桩支持 `GET /getMe` |
+
+验证：`tests/admin_phase6.py` → **49/49 通过**（新增自检 200、机器人用户名、请求域名、不含 token、
+测试消息缺 CSRF 403、测试消息送达）。
+
+> 现场排查结论：用真实 bot token 在本机直连 `api.telegram.org` 的 `getMe` 与 `sendMessage` 均成功，
+> 因此令牌与 chat_id 无误；生产失败只可能是「`TELEGRAM_API_BASE` 残留本地桩地址」或
+> 「Vercel Functions 区域访问不到 Telegram」。本阶段让这两种情况在页面上直接可见。
+
+---
+
 ## Phase 6 — robots 规则、自动同步、AI 浏览总结、Telegram 日报（2026-11-10）
 
 ### 目标

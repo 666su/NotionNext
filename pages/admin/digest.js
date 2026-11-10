@@ -58,11 +58,41 @@ function DigestContent({ admin }) {
   const [preview, setPreview] = useState(null)
   const [previewing, setPreviewing] = useState(false)
   const [sending, setSending] = useState(false)
+  const [checking, setChecking] = useState(false)
   const [result, setResult] = useState(null)
 
   const config = status?.config || {}
   const aiReady = config.ai?.configured === true
   const tgReady = config.telegram?.configured === true
+  const tgLocalBase = config.telegram?.localBase === true
+
+  async function handleCheck() {
+    setChecking(true)
+    setResult(null)
+    const response = await adminFetch('/api/admin/notify/telegram?check=1')
+    setChecking(false)
+    const bot = response.data?.bot || {}
+    const baseHost = response.data?.config?.baseHost || config.telegram?.baseHost || '—'
+    if (!response.ok) {
+      setResult({ ok: false, message: `自检失败（HTTP ${response.status}）` })
+      return
+    }
+    if (bot.ok) {
+      setResult({ ok: true, message: `连通正常：机器人 @${bot.username || '—'}（请求域名 ${baseHost}）` })
+      return
+    }
+    setResult({
+      ok: false,
+      message:
+        bot.reason === 'local_base_in_production'
+          ? `请求域名是本地地址 ${bot.detail || baseHost}：请删除 TELEGRAM_API_BASE 变量后重新部署。`
+          : bot.reason === 'request_failed'
+            ? `网络不通（${bot.detail || 'unknown'}）：Vercel Functions 区域可能访问不到 Telegram，建议改为 iad1。`
+            : bot.reason === 'upstream_error'
+              ? `Telegram 返回错误：${bot.detail || ''}`
+              : `未就绪：${bot.reason || 'unknown'}`
+    })
+  }
 
   const loadPreview = useCallback(async () => {
     setPreviewing(true)
@@ -103,7 +133,7 @@ function DigestContent({ admin }) {
       message:
         response.data?.delivery?.ok === true
           ? `已发送到 Telegram（消息 ID ${response.data.delivery.messageId ?? '—'}，${response.data.ai?.ok ? '含 AI 总结' : '原始数据'}）。`
-          : `未发送：${response.data?.delivery?.reason || 'not_configured'}（文本已生成，可先预览）`
+          : `未发送：${response.data?.delivery?.reason || 'not_configured'}${response.data?.delivery?.detail ? `（${response.data.delivery.detail}）` : ''}（文本已生成，可先预览）`
     })
     await reloadStatus()
   }
@@ -148,7 +178,7 @@ function DigestContent({ admin }) {
               display: tgReady ? '已配置' : '未配置',
               tone: tgReady ? 'default' : 'warn',
               hint: tgReady
-                ? '机器人令牌与会话 ID 均已就绪'
+                ? `请求域名 ${config.telegram?.baseHost || '—'}${tgLocalBase ? '（本地地址，生产应删除 TELEGRAM_API_BASE）' : ''}`
                 : `缺少：${(config.telegram?.missing || []).join('、') || 'TELEGRAM_BOT_TOKEN、TELEGRAM_CHAT_ID'}`
             },
             {
@@ -162,6 +192,13 @@ function DigestContent({ admin }) {
             }
           ]}
         />
+
+        {tgReady && tgLocalBase && (
+          <AdminNotice tone='error' title='TELEGRAM_API_BASE 指向本地地址'>
+            当前请求域名是 <code>{config.telegram?.baseHost}</code>，这是本地测试桩的地址，生产环境发不出去。
+            请到 Vercel 删除 <code>TELEGRAM_API_BASE</code> 变量并重新部署（默认就是官方 api.telegram.org）。
+          </AdminNotice>
+        )}
 
         {!tgReady && (
           <AdminNotice tone='warn' title='Telegram 还没接通'>
@@ -205,6 +242,13 @@ function DigestContent({ admin }) {
                 disabled={previewing}
                 className='rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800'>
                 {previewing ? '生成中…' : '重新生成'}
+              </button>
+              <button
+                type='button'
+                onClick={() => void handleCheck()}
+                disabled={checking}
+                className='rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:hover:bg-gray-800'>
+                {checking ? '自检中…' : '测试连接'}
               </button>
               <button
                 type='button'
@@ -266,7 +310,8 @@ function DigestContent({ admin }) {
               {
                 key: 'sent',
                 label: '推送',
-                format: (value, row) => (value ? '✓' : `× ${row.sendReason || ''}`)
+                format: (value, row) =>
+                  value ? '✓' : `× ${row.sendReason || ''}${row.sendDetail ? `（${row.sendDetail}）` : ''}`
               },
               { key: 'chars', label: '字数', align: 'right' }
             ]}

@@ -237,6 +237,30 @@ def main():
     code, _, _ = call(anon, "GET", "/api/admin/ai/summary?range=today")
     record("ai/summary 未登录 → 401", code == 401, f"status={code}")
 
+    # 11.5) Telegram 连通性自检（getMe）与测试消息
+    code, body, _ = call(anon, "GET", "/api/admin/notify/telegram?check=1")
+    record("自检接口未登录 → 401", code == 401, f"status={code}")
+
+    code, body, _ = call(op, "GET", "/api/admin/notify/telegram?check=1")
+    check = json.loads(body) if body.strip().startswith("{") else {}
+    record("getMe 自检 → 200", code == 200 and check.get("ok") is True, f"status={code}")
+    record("自检返回机器人用户名", (check.get("bot") or {}).get("ok") is True,
+           json.dumps(check.get("bot") or {}, ensure_ascii=False))
+    record("自检暴露请求域名（便于发现本地桩残留）",
+           bool((check.get("config") or {}).get("baseHost")),
+           str((check.get("config") or {}).get("baseHost")))
+    record("自检不返回 token",
+           "stub-bot-token" not in body and "424242:" not in body,
+           "ok")
+
+    code, _, _ = call(op, "POST", "/api/admin/notify/telegram", {"text": "hi"})
+    record("测试消息缺 CSRF → 403", code == 403, f"status={code}")
+    code, body, _ = call(op, "POST", "/api/admin/notify/telegram", {"text": "hi"},
+                         {"x-csrf-token": csrf})
+    test_msg = json.loads(body) if body.strip().startswith("{") else {}
+    record("测试消息 → 200 且送达", code == 200 and test_msg.get("ok") is True,
+           json.dumps(test_msg.get("delivery") or {}, ensure_ascii=False))
+
     # 12) 页面
     code, _, _ = call(anon, "GET", "/admin/digest")
     record("未登录 /admin/digest → 307", code in (307, 308), f"status={code}")
