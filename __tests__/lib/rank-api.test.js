@@ -13,6 +13,9 @@ const TMP_DIR = path.join(os.tmpdir(), `rank-api-${process.pid}`)
 fs.mkdirSync(TMP_DIR, { recursive: true })
 process.env.RANK_STORAGE_PATH = path.join(TMP_DIR, 'rank-data.json')
 delete process.env.REDIS_URL
+// 安全补丁 1.5（F-01）：排行榜导入令牌只从环境变量读取，
+// 不再受 Notion 配置表影响（防止令牌随 __NEXT_DATA__ 泄露）。
+process.env.RANK_SEED_SECRET = 'test-secret'
 
 let mockPages = []
 const mockConfig = { RANK_SEED_SECRET: 'test-secret' }
