@@ -1,0 +1,26 @@
+/**
+ * GET /api/admin/sync/status —— 最近一次 Notion 同步状态
+ */
+
+import { readArticleIndex, readSyncLog } from '@/lib/admin/sync/notion-sync'
+import { json, requireAdminApi, setSecurityHeaders } from '@/lib/admin/respond'
+
+export default async function handler(req, res) {
+  setSecurityHeaders(res)
+
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET')
+    return json(res, 405, { error: 'method_not_allowed' })
+  }
+
+  const guard = await requireAdminApi(req, res)
+  if (!guard) return null
+
+  try {
+    const [{ meta }, log] = await Promise.all([readArticleIndex(), readSyncLog(10)])
+    return json(res, 200, { ok: true, meta: meta || null, log })
+  } catch (err) {
+    console.error('[admin][sync] status failed:', err?.message || err)
+    return json(res, 503, { error: 'sync_store_unavailable' })
+  }
+}

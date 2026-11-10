@@ -2,5 +2,15 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "ignoreCommand": "case \"$VERCEL_GIT_COMMIT_MESSAGE\" in *\"[skip-version]\"*) exit 0;; *) exit 1;; esac",
-  "headers": []
+  "headers": [],
+  "crons": [
+    {
+      "path": "/api/cron/sync-notion",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/digest",
+      "schedule": "10 1 * * *"
+    }
+  ]
 }

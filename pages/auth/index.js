@@ -63,7 +63,7 @@ const fetchToken = async code => {
   if (!code) {
     return '无效请求'
   }
-  console.log('Auth', code)
+  // 注意：不要记录 authorization code 与 client secret（安全审计 F-02）
   const clientId = process.env.OAUTH_CLIENT_ID
   const clientSecret = process.env.OAUTH_CLIENT_SECRET
   const redirectUri = process.env.OAUTH_REDIRECT_URI
@@ -72,9 +72,6 @@ const fetchToken = async code => {
   const encoded = Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
 
   try {
-    console.log(
-      `请求Code换取Token ${clientId}:${clientSecret} -- ${redirectUri}`
-    )
     const response = await axios.post(
       'https://api.notion.com/v1/oauth/token',
       {
@@ -91,10 +88,13 @@ const fetchToken = async code => {
       }
     )
 
-    console.log('Token response', response.data)
+    if (response?.status === 200) {
+      // 不打印响应体：其中包含 access_token / bot_id 等敏感信息
+      console.log('[oauth] token exchange ok')
+    }
     return response
   } catch (error) {
-    console.error('Error fetching token', error)
+    console.error('[oauth] token exchange failed:', error?.message || error)
   }
 }
 

@@ -19,6 +19,7 @@ import ErrorHandler from '@/lib/utils/errorHandler'
 import BLOG from '@/blog.config'
 import ExternalPlugins from '@/components/ExternalPlugins'
 import BlogPet from '@/components/BlogPet/BlogPet'
+import Tracker from '@/components/Tracker'
 import SEO from '@/components/SEO'
 import { zhCN } from '@clerk/localizations'
 import dynamic from 'next/dynamic'
@@ -84,15 +85,26 @@ const MyApp = ({ Component, pageProps }) => {
   )
 
   const enableClerk = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  // 后台路由完全脱离博客主题外壳：不渲染 LayoutBase / SEO / 第三方插件 / 桌宠。
+  // 判断只依赖 pathname 前缀，默认分支保持原样，避免影响公开页面。
+  const isAdminRoute =
+    route.pathname === '/admin' || route.pathname.startsWith('/admin/')
   const content = (
     <AppErrorBoundary>
       <GlobalContextProvider {...pageProps}>
-        <GLayout {...pageProps}>
-          <SEO {...pageProps} />
+        {isAdminRoute ? (
           <Component {...pageProps} />
-        </GLayout>
-        <ExternalPlugins {...pageProps} />
-        <BlogPet />
+        ) : (
+          <>
+            <GLayout {...pageProps}>
+              <SEO {...pageProps} />
+              <Component {...pageProps} />
+            </GLayout>
+            <ExternalPlugins {...pageProps} />
+            <BlogPet />
+            <Tracker />
+          </>
+        )}
       </GlobalContextProvider>
     </AppErrorBoundary>
   )

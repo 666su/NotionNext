@@ -1,0 +1,138 @@
+/**
+ * 管理员会话（服务端 opaque session）
+ *
+ * 存储：Redis `admin:sess:<sha256(sid)>` → JSON 记录；`admin:sess:uid:<uid>` Set 用于批量失效。
+ * Cookie 只携带 `<sid>.<HMAC(sid)>`，HMAC 用于 Edge 中间件的快速签名校验（不访问 Redis）。
+ * 权威校验始终在 Node 侧（GSSP / API）。
+ */
+
+import { KV_SESSION, KV_SESSION_UID } from './constants'
+import {
+  hashIp,
+  hmacBase64url,
+  randomToken,
+  sha256Hex,
+  timingSafeEqualStr
+} from './crypto'
+import {
+  kvDel,
+  kvExpire,
+  kvGet,
+  kvSadd,
+  kvSet,
+  kvSmembers,
+  kvSrem
+} from './kv'
+
+export function signSessionToken(sid, secret) {
+  return `${sid}.${hmacBase64url(secret, sid)}`
+}
+
+/** @returns {string|null} 通过签名校验的 sid */
+export function verifySessionToken(token, secret) {
+  const raw = String(token || '')
+  const dot = raw.lastIndexOf('.')
+  if (dot <= 0) return null
+  const sid = raw.slice(0, dot)
+  const sig = raw.slice(dot + 1)
+  if (!sid || !sig) return null
+  return timingSafeEqualStr(sig, hmacBase64url(secret, sid)) ? sid : null
+}
+
+function sessionKey(sid) {
+  return KV_SESSION + sha256Hex(sid)
+}
+
+export async function createSession({
+  username,
+  role = 'admin',
+  secret,
+  idleSec,
+  ttlSec,
+  ip,
+  userAgent
+}) {
+  const sid = randomToken(32)
+  const csrfToken = randomToken(24)
+  const now = Date.now()
+  const record = {
+    uid: String(username),
+    role,
+    csrf: csrfToken,
+    createdAt: now,
+    lastSeenAt: now,
+    expiresAt: now + ttlSec * 1000,
+    ipHash: hashIp(ip, secret),
+    uaHash: sha256Hex(userAgent || '').slice(0, 16)
+  }
+
+  await kvSet(sessionKey(sid), JSON.stringify(record), ttlSec)
+  await kvSadd(KV_SESSION_UID + username, sha256Hex(sid))
+  await kvExpire(KV_SESSION_UID + username, ttlSec)
+
+  return { token: signSessionToken(sid, secret), csrfToken, record }
+}
+
+/** 读取并校验会话；返回 { sid, key, record } 或 null */
+export async function readSession(token, secret) {
+  const sid = verifySessionToken(token, secret)
+  if (!sid) return null
+
+  const key = sessionKey(sid)
+  const raw = await kvGet(key)
+  if (!raw) return null
+
+  let record
+  try {
+    record = JSON.parse(raw)
+  } catch (err) {
+    await kvDel(key)
+    return null
+  }
+
+  if (!record?.uid || !record?.expiresAt) return null
+  if (Number(record.expiresAt) <= Date.now()) {
+    await kvDel(key)
+    return null
+  }
+
+  return { sid, key, record }
+}
+
+/**
+ * 滑动续期：空闲时间重置为 idleSec，但不超过会话的绝对有效期。
+ * @returns {Promise<boolean>} 会话是否仍然有效
+ */
+export async function touchSession(session, idleSec) {
+  const { key, record } = session
+  const remainingMs = Number(record.expiresAt) - Date.now()
+  if (remainingMs <= 0) return false
+
+  const ttl = Math.max(1, Math.min(idleSec, Math.ceil(remainingMs / 1000)))
+  const next = { ...record, lastSeenAt: Date.now() }
+  await kvSet(key, JSON.stringify(next), ttl)
+  session.record = next
+  return true
+}
+
+export async function destroySession(session) {
+  if (!session) return
+  await kvDel(session.key)
+  if (session.record?.uid) {
+    await kvSrem(
+      KV_SESSION_UID + session.record.uid,
+      sha256Hex(session.sid)
+    )
+  }
+}
+
+/** 使某个管理员的全部会话失效（改密 / 主动登出所有设备） */
+export async function destroyUserSessions(username) {
+  const setKey = KV_SESSION_UID + username
+  const members = (await kvSmembers(setKey)) || []
+  if (members.length) {
+    await kvDel(...members.map(hash => KV_SESSION + hash))
+  }
+  await kvDel(setKey)
+  return members.length
+}

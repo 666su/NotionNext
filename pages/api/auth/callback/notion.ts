@@ -57,8 +57,9 @@ export default async function handler(
     const params = await fetchToken(code)
 
     if (params?.status === 200) {
+      // 不要把 token 响应塞进 URL（会进入浏览器历史、Referer 与平台日志）
       const redirectQuery = {
-        msg: '成功了' + JSON.stringify(params.data)
+        msg: '成功了'
       }
 
       // 这里将用户数据写入到Notion数据库
@@ -105,14 +106,20 @@ const fetchToken = async (code: string): Promise<NotionTokenResponse> => {
         }
       }
     )
-    console.log('OAuth身份信息', response.data)
+    console.log('[oauth] identity exchanged', {
+      workspace: response.data?.workspace_name,
+      botId: response.data?.bot_id
+    })
     return {
       status: response.status,
       statusText: response.statusText,
       data: response.data
     }
   } catch (error) {
-    console.error('Error fetching token', error)
+    console.error(
+      '[oauth] token exchange failed:',
+      error instanceof Error ? error.message : 'unknown error'
+    )
     return {
       status: 400,
       statusText: 'failed',

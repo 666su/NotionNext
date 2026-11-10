@@ -58,7 +58,19 @@ export default function NotifyStatusPage({ status }) {
   )
 }
 
-export async function getServerSideProps() {
+export async function getServerSideProps(ctx) {
+  // Jason Blog Admin：该页原先公开可读（会暴露 Redis 配置态与订阅数），现纳入后台鉴权。
+  const { requireAdminPage } = await import('@/lib/admin/respond')
+  const guard = await requireAdminPage(ctx, { next: '/admin/notify-status' })
+  if (!guard.ok) {
+    if (guard.unconfigured) {
+      return {
+        redirect: { destination: '/admin/login', permanent: false }
+      }
+    }
+    return { redirect: guard.redirect }
+  }
+
   var isBuild = !!process.env.BUILD_MODE
   var status = {
     storage: 'file',

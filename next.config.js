@@ -314,6 +314,11 @@ const nextConfig = {
           source: '/rss/feed.json',
           destination: '/api/rss?format=json'
         },
+        // robots.txt 由 API 动态生成（Sitemap 域名随站点配置变化，静态文件写不死）
+        {
+          source: '/robots.txt',
+          destination: '/api/robots'
+        },
         // 伪静态重写
         {
           source: '/:path*.html',
@@ -384,6 +389,46 @@ const nextConfig = {
             //       : '*'
             //   },
             //   { key: 'Access-Control-Max-Age', value: '86400' }
+          ]
+        },
+        // Jason Blog Admin：后台页面与接口禁止缓存 / 禁止索引 / 禁止被 iframe 嵌套
+        // 注意：这些规则写在全站规则之后，同 key 时后者生效。
+        {
+          source: '/admin',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'private, no-store, max-age=0, must-revalidate'
+            },
+            { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+            { key: 'X-Frame-Options', value: 'DENY' },
+            { key: 'X-Content-Type-Options', value: 'nosniff' },
+            { key: 'Referrer-Policy', value: 'no-referrer' }
+          ]
+        },
+        {
+          source: '/admin/:path*',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'private, no-store, max-age=0, must-revalidate'
+            },
+            { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+            { key: 'X-Frame-Options', value: 'DENY' },
+            { key: 'X-Content-Type-Options', value: 'nosniff' },
+            { key: 'Referrer-Policy', value: 'no-referrer' }
+          ]
+        },
+        {
+          source: '/api/admin/:path*',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'private, no-store, max-age=0, must-revalidate'
+            },
+            { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+            { key: 'X-Content-Type-Options', value: 'nosniff' },
+            { key: 'Referrer-Policy', value: 'no-referrer' }
           ]
         },
         //   {
