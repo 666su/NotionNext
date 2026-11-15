@@ -5,6 +5,7 @@ import { MenuList } from './MenuList'
 import { MobileDrawer } from './MobileDrawer'
 import { SearchOverlay } from './SearchOverlay'
 import { SettingsDropdown } from './SettingsDropdown'
+import MessageTrigger from '@/components/messages/MessageTrigger'
 import Announcement from './Announcement'
 
 /**
@@ -166,6 +167,9 @@ export const Header = props => {
                 aria-label='搜索'>
                 <i className='fas fa-search'></i>
               </button>
+
+              {/* 私信入口：与设置按钮同排，点击打开右下角抽屉 */}
+              <MessageTrigger />
 
               {/* 设置按钮：桌面端与移动端均显示（字号+夜间模式+语言） */}
               <SettingsDropdown />

@@ -68,6 +68,15 @@ export default function MessageWidget() {
     }
   }, [form])
 
+  // 页头入口（MessageTrigger）派发事件 → 打开抽屉
+  useEffect(() => {
+    function onOpen() {
+      setOpen(true)
+    }
+    window.addEventListener('jbm:open', onOpen)
+    return () => window.removeEventListener('jbm:open', onOpen)
+  }, [])
+
   // Esc 关闭
   useEffect(() => {
     if (!open) return undefined
@@ -154,7 +163,7 @@ export default function MessageWidget() {
           aria-label='打开私信窗口'
           aria-expanded={false}
           onClick={() => setOpen(true)}
-          className='fixed right-4 bottom-[116px] z-40 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-lg transition-colors hover:bg-gray-50 md:bottom-[148px] dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-200 dark:hover:bg-gray-800'>
+          className='fixed right-4 bottom-[116px] z-40 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-700 shadow-lg transition-colors hover:bg-gray-50 md:hidden dark:border-gray-700 dark:bg-[#0f1115] dark:text-gray-200 dark:hover:bg-gray-800'>
           <svg viewBox='0 0 24 24' aria-hidden='true' className='h-5 w-5' fill='none' stroke='currentColor' strokeWidth='1.8'>
             <path d='M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7A2.5 2.5 0 0 1 17.5 16H9l-4 4v-4.2A2.5 2.5 0 0 1 4 13.5z' strokeLinecap='round' strokeLinejoin='round' />
           </svg>
