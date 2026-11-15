@@ -18,17 +18,30 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-const ENV_FILE = path.join(process.cwd(), '.dsh-ops', 'dev-env.sh')
+const ENV_FILES = [
+  path.join(process.cwd(), '.dsh-ops', 'tg-prod.env'), // 生产真实 bot（优先）
+  path.join(process.cwd(), '.dsh-ops', 'dev-env.sh') // 本地测试桩
+]
 
-function readEnvFile(key) {
+function parseEnvFile(file, key) {
   try {
-    const text = fs.readFileSync(ENV_FILE, 'utf8')
-    const m = text.match(new RegExp(`^\\s*(?:export\\s+)?${key}\\s*=\\s*(.*)$`, 'm'))
+    const text = fs.readFileSync(file, 'utf8')
+    // 兼容三种写法：K=V / export K=V / set K=V（Windows cmd）
+    const m = text.match(new RegExp(`^\\s*(?:export\\s+|set\\s+)?${key}\\s*=\\s*(.*)$`, 'm'))
     if (!m) return ''
     return m[1].trim().replace(/^['"]|['"]$/g, '')
   } catch (err) {
     return ''
   }
+}
+
+function readEnvFile(key) {
+  const explicit = args.env ? String(args.env) : ''
+  // 只用一个来源，避免"生产 token + 本地 API base"混用：tg-prod.env 存在就只用它
+  const file = explicit
+    ? path.resolve(process.cwd(), explicit)
+    : ENV_FILES.find(item => fs.existsSync(item)) || ENV_FILES[1]
+  return parseEnvFile(file, key)
 }
 
 function env(key) {
