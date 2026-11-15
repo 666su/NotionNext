@@ -428,7 +428,7 @@ export default function AdminInbox() {
                 </div>
               </header>
 
-              <div className='flex-1 space-y-3 overflow-y-auto px-3 py-3'>
+              <div className='mx-auto w-full max-w-3xl flex-1 space-y-3 overflow-y-auto px-3 py-3'>
                 {(detail.messages || []).map(message => {
                   const mine = message.sender === 'admin'
                   return (
@@ -453,7 +453,7 @@ export default function AdminInbox() {
                 })}
               </div>
 
-              <div className='border-t border-gray-100 p-3 dark:border-gray-800'>
+              <div className='mx-auto w-full max-w-3xl border-t border-gray-100 p-3 dark:border-gray-800'>
                 <textarea
                   value={reply}
                   onChange={event => setReply(event.target.value)}
