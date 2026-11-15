@@ -8,6 +8,7 @@ import { readMessagesConfig } from '@/lib/messages/config'
 import { buildPrivateLink, json, sameOrigin } from '@/lib/messages/respond'
 import { checkCreateLimits, ipId } from '@/lib/messages/rate-limit'
 import { createConversation } from '@/lib/messages/store'
+import { notifyVisitorMessage } from '@/lib/messages/telegram'
 import { validateCreatePayload } from '@/lib/messages/validate'
 
 export const config = {
@@ -55,6 +56,13 @@ export default async function handler(req, res) {
         message: '该请求已创建过会话；出于安全考虑，私密链接只在首次创建时显示一次。'
       })
     }
+
+    // TG 通知：异步、失败不影响访客（Phase 7）
+    void notifyVisitorMessage({
+      conversation: { id: result.id, visitor_name: parsed.value.name, message_count: 1 },
+      message: { id: result.messageId, content: parsed.value.content },
+      isFirst: true
+    }).catch(err => console.warn('[messages][tg] notify threw:', err?.message || err))
 
     return json(res, 201, {
       ok: true,

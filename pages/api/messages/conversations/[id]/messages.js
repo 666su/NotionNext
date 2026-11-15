@@ -9,7 +9,8 @@ import { requireConversation } from '@/lib/messages/auth'
 import { readMessagesConfig } from '@/lib/messages/config'
 import { json, sameOrigin } from '@/lib/messages/respond'
 import { checkSendLimits } from '@/lib/messages/rate-limit'
-import { appendMessage, listMessages } from '@/lib/messages/store'
+import { appendMessage, getConversation, listMessages } from '@/lib/messages/store'
+import { notifyVisitorMessage } from '@/lib/messages/telegram'
 import { validateMessagePayload } from '@/lib/messages/validate'
 
 export const config = {
@@ -58,6 +59,14 @@ export default async function handler(req, res) {
       content: parsed.value.content,
       clientRequestId: parsed.value.clientRequestId
     })
+    if (!duplicated) {
+      // TG 通知：异步、失败不影响访客（Phase 7）
+      void (async () => {
+        const conv = await getConversation(auth.convId)
+        await notifyVisitorMessage({ conversation: conv, message, isFirst: false })
+      })().catch(err => console.warn('[messages][tg] notify threw:', err?.message || err))
+    }
+
     return json(res, duplicated ? 200 : 201, { ok: true, message, duplicated })
   } catch (err) {
     if (err?.code === 'not_found') return json(res, 404, { error: 'not_found' })

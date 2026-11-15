@@ -73,6 +73,18 @@ node scripts/messages-db.mjs print              # 打印 SQL（不想给 token �
 
 ---
 
+### 3.9 已执行清单（截至 2026-11-15）
+
+| 版本 | 文件 | 内容 | 状态 |
+| --- | --- | --- | --- |
+| 0001 | `0001_messages_init.sql` | schema `messages` + conversations/messages/access_logs/schema_migrations + 12 索引 + RLS | ✅ 已应用（checksum `a3785fa8de4cf277`） |
+| 0002 | `0002_tg_links.sql` | `tg_links`（TG 消息 ↔ 会话）+ `tg_updates`（update_id 幂等）+ 3 索引 | ✅ 已应用（2026-11-15，Phase 7） |
+
+0002 的回滚：`node scripts/messages-db.mjs print` 取 `.down.sql` 内容后在 SQL Editor 执行，
+只删这两张表，会话与消息不受影响（回滚后请同时 `node scripts/messages-tg-webhook.mjs delete`）。
+
+---
+
 ## 5. 生产迁移：必须提交的四样东西
 
 每次生产迁移都要在 PR/消息里给出：

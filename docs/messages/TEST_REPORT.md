@@ -243,3 +243,22 @@ EBUSY: resource busy or locked, rename '.next/export/zh-CN/article/proxy02.html'
 | `git commit` | 已按你"先不要推送"的要求保持在工作区（未提交、未推送） |
 | 预览部署 | 需要你在 Vercel 操作；环境变量见 DEPLOYMENT_GUIDE §1 |
 | 移动端真机 | 只做了 CSS 断点与桌面浏览器验收 |
+
+---
+
+## 12. Phase 7：Telegram 双向通道（2026-11-15 夜）
+
+| 项目 | 命令 | 结果 |
+| --- | --- | --- |
+| TG 通道断言 | `python tests/messages_telegram.py` | ✅ **19/19** |
+| 既有四套件回归 | phase1 / phase2 / admin / security | ✅ 41 / 19 / 29 / 24 |
+
+覆盖：创建会话即推送（含昵称、会话码、后台按钮）；`tg_links` 记录 Telegram 返回的 message_id；
+错误/缺失 secret → 403；陌生 chat 忽略且不回执；未引用消息不被当成回复（并回提示）；
+引用通知 → 管理员消息入库 + 回执带 ✅ 与昵称 + **未读清零**；重复 `update_id` 不重复写入；
+引用未知通知 → 提示找不到；超 5000 字被拒。
+
+测试方式：本地起 `scripts/telegram-stub.mjs`（假 Telegram API），
+断言"发了哪些消息、返回哪个 message_id"，**不打扰真实 TG**。
+
+累计：**132 项**（41 + 19 + 29 + 24 + 19）。

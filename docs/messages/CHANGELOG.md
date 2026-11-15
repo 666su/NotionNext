@@ -4,6 +4,56 @@
 
 ---
 
+## Phase 7 —— Telegram 双向通道（2026-11-15 夜）
+
+### 目标
+
+私信不只进后台，也进你的 TG：**来消息自动推送，直接在 TG 里"回复"那条通知就等于回复访客**。
+你确认的取舍：私聊（不做群）、网页端回复不镜像到 TG。
+
+### 新增
+
+| 文件 | 作用 |
+| --- | --- |
+| `migrations/0002_tg_links.sql` + `.down.sql` | `tg_links`（TG 消息 ↔ 会话）、`tg_updates`（update_id 幂等）、3 索引 |
+| `lib/messages/telegram.js` | 配置读取、`tgSendMessage`、`notifyVisitorMessage`、`resolveConversationByReply`、`claimUpdate`、`sendAck` |
+| `pages/api/telegram/webhook.js` | 收 Telegram update：鉴权 → 白名单 → 幂等 → 反查会话 → 写入 → 回执 |
+| `scripts/messages-tg-webhook.mjs` | `info / set / delete / test / pending` 五个命令管理 webhook |
+| `scripts/telegram-stub.mjs` | 本地假 Telegram API，测试用，不打扰真机 |
+| `tests/messages_telegram.py` | 19 项断言 |
+
+### 修改
+
+| 文件 | 改动 |
+| --- | --- |
+| `pages/api/messages/conversations/index.js` | 创建会话后异步推送（失败不影响访客） |
+| `pages/api/messages/conversations/[id]/messages.js` | 访客追问后异步推送 |
+| `.env.example` | 新增 `TELEGRAM_WEBHOOK_SECRET` |
+| 文档 | MIGRATIONS / DATABASE_SCHEMA / API / DEPLOYMENT_GUIDE / TEST_REPORT 同步 |
+
+### 行为
+
+| 场景 | 结果 |
+| --- | --- |
+| 访客建会话 / 追问 | TG 收到「📬 新的私信会话」或「💬 访客追问」+ 昵称 + 摘要 + 「在后台查看」按钮 |
+| 你在 TG「回复」该通知 | 内容作为管理员回复写入；**未读数清零**、状态转 processing；bot 回「✅ 已发给 …」 |
+| 你没引用就发消息 | 不写入，只提示「请用回复」——避免误发 |
+| 引用已删除的通知 | 提示找不到，不写入 |
+| Telegram 重投同一 update | `tg_updates` 主键拦截，不重复写入 |
+
+### 安全
+
+- webhook 必须带 `X-Telegram-Bot-Api-Secret-Token`，缺 secret 直接 503（fail-closed）；
+- 只接受 `TELEGRAM_CHAT_ID` 这一个 chat，其它 chat 静默忽略；
+- 内容走与网页端相同的校验（控制字符剔除、5000 字上限）；
+- 审计动作 `messages.tg_reply`（成功/失败都记）。
+
+### 验证
+
+`python tests/messages_telegram.py` → **19/19**；四套既有测试回归 41/19/29/24 全过（累计 132 项）。
+
+---
+
 ## Phase 0 —— 只读审计（2026-11-15）
 
 **产出**（`docs/messages/`）：`PROJECT_SPEC.md`、`AUDIT_REPORT.md`、`ARCHITECTURE_PROPOSAL.md`、

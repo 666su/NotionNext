@@ -194,6 +194,29 @@
 
 ---
 
+### 3.8 `POST /api/telegram/webhook`（Telegram 回调，Phase 7）
+
+| 项 | 值 |
+| --- | --- |
+| 鉴权 | 请求头 `X-Telegram-Bot-Api-Secret-Token` 必须等于 `TELEGRAM_WEBHOOK_SECRET`，否则 **403** |
+| 来源限制 | 只处理 `message.chat.id === TELEGRAM_CHAT_ID`，其它 chat 返回 `200 {ignored:"chat_not_allowed"}` |
+| 幂等 | `update_id` 主键去重，重复投递返回 `200 {duplicate:true}` |
+| 未配置 | 缺 `TELEGRAM_WEBHOOK_SECRET` → **503**（fail-closed，不接受无签名来源） |
+
+行为矩阵：
+
+| 收到 | 处理 | 回执 |
+| --- | --- | --- |
+| 引用某条通知的文本 | 写入 `messages.messages`（sender=admin）+ 未读清零 | `✅ 已发给 <昵称>` |
+| 普通文本（没引用） | 不写入 | `用「回复」引用某条私信通知再发内容…` |
+| 引用已删除/不存在的通知 | 不写入 | `这条通知找不到对应会话…` |
+| 内容超 5000 字 | 不写入 | `内容太长，没有发送。` |
+| 会话已满 2000 条 | 不写入 | `这个会话消息已满 2000 条…` |
+
+所有分支都返回 200（除鉴权失败），避免 Telegram 反复重投；失败详情写服务端日志与审计 `messages.tg_reply`。
+
+---
+
 ## 4. 尚未实现（后续阶段，明确标注）
 
 | 能力 | 阶段 |

@@ -161,3 +161,55 @@ node scripts/messages-db.mjs cleanup --spamDays=30 --deletedDays=90 --apply
 | 每月 | `backup` + 检查 `.dsh-ops/` 备份文件是否可读 |
 | 每季 | `cleanup`（dry-run 先看） |
 | 变更前 | 任何 `MESSAGE_TOKEN_SECRET` 轮换前先读 `DEPLOYMENT_GUIDE §7`（会让所有 token_hash 失效） |
+
+---
+
+## 10. Telegram 双向通道（Phase 7）
+
+### 10.1 需要配置的环境变量
+
+| 变量 | 说明 |
+| --- | --- |
+| `TELEGRAM_BOT_TOKEN` | 已有（每日总结在用），复用即可 |
+| `TELEGRAM_CHAT_ID` | **私聊** chat id（和 bot 单聊的那个） |
+| `TELEGRAM_WEBHOOK_SECRET` | 新增：任意长随机串，注册 webhook 时同值传给 Telegram |
+
+> `TELEGRAM_API_BASE` 只用于本地桩测试；**生产必须删除**（默认就是官方 `api.telegram.org`）。
+
+生成 secret：
+
+```cmd
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+### 10.2 注册 webhook（部署完成后执行一次）
+
+```cmd
+:: Webhook 地址必须 https，且带 /api/telegram/webhook
+node scripts/messages-tg-webhook.mjs set --url=https://blog.20240606.xyz/api/telegram/webhook
+
+:: 核对
+node scripts/messages-tg-webhook.mjs info
+
+:: 发一条测试消息到你的 TG
+node scripts/messages-tg-webhook.mjs test
+```
+
+`info` 里 `url` 应是你的域名、`pending_update_count` 为 0、`last_error` 为空。
+
+### 10.3 使用方式
+
+1. 访客发来私信 → 你的 TG 收到一条「📬 新的私信会话 / 来自 <昵称> / 正文摘要」；
+2. **在 TG 里长按那条消息 → 回复 → 打字 → 发送**；
+3. bot 回一条「✅ 已发给 <昵称>」，访客那边刷新就能看到；
+4. 没引用就发消息，bot 会提示你「请用回复」，不会乱发出去。
+
+### 10.4 排错
+
+| 现象 | 检查 |
+| --- | --- |
+| 收不到任何推送 | `Node scripts/messages-tg-webhook.mjs test` 是否能收到；Vercel Logs 搜 `[messages][tg]` |
+| 推送了但没有映射（回复无效） | 看 `select * from messages.tg_links order by id desc limit 5` 是否有新行 |
+| 回复后访客没看到 | Vercel Logs 搜 `[messages][tg] reply failed`；确认 `SUPABASE_SECRET_KEY` 有效 |
+| Telegram 报 403 | `TELEGRAM_WEBHOOK_SECRET` 与注册时不一致 → 重新 `set` 一次 |
+| 重复收到同一条 | 幂等表 `tg_updates` 会拦；若仍重复，检查是否部署了两个环境共用同一 bot |

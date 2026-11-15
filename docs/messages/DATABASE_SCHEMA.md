@@ -60,6 +60,32 @@
 
 ---
 
+### 1.5 `messages.tg_links`（Phase 7）
+
+| 列 | 类型 | 说明 |
+| --- | --- | --- |
+| `id` | bigserial PK | — |
+| `tg_chat_id` | bigint not null | Telegram chat（私聊 id） |
+| `tg_message_id` | bigint not null | Telegram 消息 id（**推送时返回的那个**） |
+| `conversation_id` | text not null → `conversations.id` | 该通知对应哪个会话（级联删除） |
+| `source_message_id` | text → `messages.id` | 触发通知的访客消息（可空） |
+| `kind` | text default `notify` | 预留：summary / reminder |
+| `created_at` | timestamptz | — |
+
+唯一键 `(tg_chat_id, tg_message_id)`：同一条 TG 消息只可能映射到一个会话。
+
+### 1.6 `messages.tg_updates`（Phase 7）
+
+| 列 | 类型 | 说明 |
+| --- | --- | --- |
+| `update_id` | bigint PK | Telegram 的 update_id |
+| `handled_at` | timestamptz | 处理时间 |
+| `note` | text | 处理类型（如 `reply`） |
+
+作用：Telegram 投递有重试，主键冲突即视为重复，保证不会写两条相同回复。
+
+---
+
 ## 2. 索引
 
 | 表 | 索引 | 用途 |
