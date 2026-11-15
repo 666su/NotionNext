@@ -36,6 +36,21 @@ export default async function handler(req, res) {
     console.warn('[cron][digest] cooldown store error:', err?.message || err)
   }
 
+  // 心跳：顺带访问一次私信库，避免 Supabase 免费项目因 7 天无活动被暂停
+  // （Hobby 计划最多 2 个 cron，所以复用本任务，不新增调度）
+  let messagesHeartbeat = 'skipped'
+  try {
+    const { readMessagesConfig } = await import('@/lib/messages/config')
+    const { getStats } = await import('@/lib/messages/store')
+    if (readMessagesConfig().ready) {
+      await getStats()
+      messagesHeartbeat = 'ok'
+    }
+  } catch (err) {
+    messagesHeartbeat = 'failed'
+    console.warn('[cron][digest] messages heartbeat failed:', err?.message || err)
+  }
+
   try {
     const result = await runDailyDigest({ send: true })
     return res.status(200).json({
@@ -45,6 +60,7 @@ export default async function handler(req, res) {
       uv: result.facts.uv,
       ai: result.ai,
       delivery: result.delivery,
+      messagesHeartbeat,
       computedAt: result.computedAt
     })
   } catch (err) {

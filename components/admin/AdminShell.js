@@ -5,7 +5,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ADMIN_NAV } from '@/lib/admin/constants'
 import { adminFetch } from '@/lib/admin/client'
 
@@ -26,6 +26,31 @@ export default function AdminShell({
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [unreadMessages, setUnreadMessages] = useState(0)
+
+  // 私信未读徽标：20 秒轮询一次轻量统计（Q3 决策）；页面隐藏时跳过
+  useEffect(() => {
+    let cancelled = false
+    async function poll() {
+      try {
+        const res = await adminFetch('/api/admin/messages/stats')
+        if (!cancelled && res.ok && res.data?.ok) {
+          setUnreadMessages(Number(res.data.unreadConversations) || 0)
+        }
+      } catch (err) {
+        /* 徽标失败不影响后台使用 */
+      }
+    }
+    void poll()
+    const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return
+      void poll()
+    }, 20000)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+    }
+  }, [])
 
   const groups = useMemo(() => {
     const order = ['main', 'content', 'ops']
@@ -91,7 +116,18 @@ export default function AdminShell({
                             ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
                             : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
                         }`}>
-                        {item.label}
+                        <span className='flex-1 truncate'>{item.label}</span>
+                        {item.key === 'messages' && unreadMessages > 0 && (
+                          <span
+                            aria-label={`${unreadMessages} 条未读私信`}
+                            className={`ml-1 shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+                              isActive
+                                ? 'bg-white/20 text-white dark:bg-gray-900/20 dark:text-gray-900'
+                                : 'bg-red-500 text-white'
+                            }`}>
+                            {unreadMessages > 99 ? '99+' : unreadMessages}
+                          </span>
+                        )}
                       </Link>
                     </li>
                   )

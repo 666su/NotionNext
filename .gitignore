@@ -86,3 +86,11 @@ __pycache__/
 
 # 本地运维/测试临时目录（可能含开发环境变量，禁止入库）
 .dsh-ops/
+
+# 本地临时文件（含 bot token / 凭据），禁止入库
+tg机器人.txt
+*.messages-backup.json
+messages-export-*.json
+
+# 备用构建输出目录（NEXT_DIST_DIR）
+.next-prod/

@@ -52,6 +52,10 @@ export default function handler(req, res) {
     'Disallow: /dashboard',
     'Disallow: /dashboard/',
     '',
+    '# 私密会话页：任何情况下都不该被索引',
+    'Disallow: /message',
+    'Disallow: /message/',
+    '',
     '# 站内搜索结果页：避免抓取参数化页造成无限组合',
     'Disallow: /search/',
     ''

@@ -194,6 +194,9 @@ function getOutput() {
 }
 
 const nextConfig = {
+  // Windows 上 `.next/export` 偶尔被实时扫描锁住（EBUSY），可用 NEXT_DIST_DIR 换一个输出目录再构建；
+  // 默认仍为 `.next`，不影响 Vercel。
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   eslint: {
     ignoreDuringBuilds: true
   },
@@ -417,6 +420,30 @@ const nextConfig = {
             { key: 'X-Frame-Options', value: 'DENY' },
             { key: 'X-Content-Type-Options', value: 'nosniff' },
             { key: 'Referrer-Policy', value: 'no-referrer' }
+          ]
+        },
+        // 私信：页面与接口都禁止缓存 / 索引 / 被 iframe 嵌套
+        {
+          source: '/message/:path*',
+          headers: [
+            { key: 'Cache-Control', value: 'private, no-store, max-age=0, must-revalidate' },
+            { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+            { key: 'Referrer-Policy', value: 'no-referrer' },
+            { key: 'X-Content-Type-Options', value: 'nosniff' },
+            { key: 'X-Frame-Options', value: 'DENY' }
+          ]
+        },
+        {
+          // 覆盖全站 CORS：私信接口只接受同源（跨域 JS 读不到响应）
+          source: '/api/messages/:path*',
+          headers: [
+            { key: 'Cache-Control', value: 'private, no-store, max-age=0, must-revalidate' },
+            { key: 'Access-Control-Allow-Origin', value: '' },
+            { key: 'Vary', value: 'Origin' },
+            { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
+            { key: 'Referrer-Policy', value: 'no-referrer' },
+            { key: 'X-Content-Type-Options', value: 'nosniff' },
+            { key: 'X-Frame-Options', value: 'DENY' }
           ]
         },
         {

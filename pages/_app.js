@@ -27,6 +27,10 @@ import dynamic from 'next/dynamic'
 const ClerkProvider = dynamic(() =>
   import('@clerk/nextjs').then(m => m.ClerkProvider)
 )
+// 私信悬浮入口：只在公开页面挂载，懒加载，不阻塞首屏
+const MessageWidget = dynamic(() => import('@/components/messages/MessageWidget'), {
+  ssr: false
+})
 const AppErrorBoundary = ErrorHandler.createErrorBoundary(
   <div style={{ padding: '2rem', textAlign: 'center', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
     <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Something went wrong</h1>
@@ -89,10 +93,15 @@ const MyApp = ({ Component, pageProps }) => {
   // 判断只依赖 pathname 前缀，默认分支保持原样，避免影响公开页面。
   const isAdminRoute =
     route.pathname === '/admin' || route.pathname.startsWith('/admin/')
+  // 私密会话页：不套博客外壳（不加载第三方插件、桌宠、统计），只渲染页面本身
+  const isMessagesRoute =
+    route.pathname === '/message' || route.pathname.startsWith('/message/')
   const content = (
     <AppErrorBoundary>
       <GlobalContextProvider {...pageProps}>
         {isAdminRoute ? (
+          <Component {...pageProps} />
+        ) : isMessagesRoute ? (
           <Component {...pageProps} />
         ) : (
           <>
@@ -103,6 +112,7 @@ const MyApp = ({ Component, pageProps }) => {
             <ExternalPlugins {...pageProps} />
             <BlogPet />
             <Tracker />
+            <MessageWidget />
           </>
         )}
       </GlobalContextProvider>
