@@ -168,6 +168,8 @@ function DashboardContent({ admin }) {
               </AdminNotice>
             )}
 
+            <div className='grid gap-5 xl:grid-cols-3'>
+              <div className='xl:col-span-2'>
             {data.hourly?.day ? (
               <AdminPanel
                 title='逐小时访问'
@@ -223,8 +225,9 @@ function DashboardContent({ admin }) {
                 />
               </AdminPanel>
             )}
+              </div>
 
-            <div className='grid gap-4 lg:grid-cols-2'>
+              <div>
               <AdminPanel
                 title='访问来源'
                 description='按当日首个页面浏览的 Referer 归类'
@@ -239,6 +242,10 @@ function DashboardContent({ admin }) {
                   emptyText='暂无来源数据'
                 />
               </AdminPanel>
+              </div>
+            </div>
+
+            <div className='grid gap-4 lg:grid-cols-2'>
 
               <AdminPanel
                 title='热门页面'
@@ -255,9 +262,7 @@ function DashboardContent({ admin }) {
                   rows={data.pages?.pv || []}
                 />
               </AdminPanel>
-            </div>
 
-            <div className='grid gap-4 lg:grid-cols-2'>
               <AdminPanel
                 title='文章表现'
                 description='按 PV 排序（路径口径与 article_id 口径取较大值）'
@@ -290,6 +295,7 @@ function DashboardContent({ admin }) {
                 />
               </AdminPanel>
 
+              <div className='lg:col-span-2'>
               <AdminPanel
                 title='搜索与跳出'
                 description='站内搜索次数、入口与退出页面'
@@ -326,7 +332,9 @@ function DashboardContent({ admin }) {
                   </div>
                 </div>
               </AdminPanel>
+              </div>
             </div>
+
 
             <p className='text-[11px] text-gray-400 dark:text-gray-500'>
               数据生成时间：{formatDateTime(data.generatedAt)} · 时区 Asia/Shanghai
