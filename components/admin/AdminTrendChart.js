@@ -16,7 +16,8 @@ export default function AdminTrendChart({
   series = [],
   height = 200,
   emptyText = '该时间范围内没有数据',
-  valueLabel = '数值'
+  valueLabel = '数值',
+  maxWidth = 880
 }) {
   const allPoints = series.flatMap(item => item.points || [])
   const labels = series[0]?.points?.map(point => point.label) || []
@@ -34,7 +35,7 @@ export default function AdminTrendChart({
   const ticks = [0, 0.25, 0.5, 0.75, 1]
 
   return (
-    <div>
+    <div className='mx-auto w-full' style={{ maxWidth }}>
       <svg
         viewBox={`0 0 ${WIDTH} ${height}`}
         className='w-full'

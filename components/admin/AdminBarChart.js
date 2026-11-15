@@ -15,7 +15,8 @@ export default function AdminBarChart({
   height = 180,
   color = '#3b82f6',
   emptyText = '暂无数据',
-  unit = ''
+  unit = '',
+  maxWidth = 880
 }) {
   const values = points.map(point => Number(point.value) || 0)
   const max = niceAxisMax(Math.max(0, ...values))
@@ -27,7 +28,7 @@ export default function AdminBarChart({
   const labelEvery = Math.max(1, Math.ceil(points.length / 12))
 
   return (
-    <div>
+    <div className='mx-auto w-full' style={{ maxWidth }}>
       <svg
         viewBox={`0 0 ${WIDTH} ${height}`}
         className='w-full'
