@@ -135,7 +135,7 @@ async function main() {
     }
     const { ok, data } = await call('sendMessage', {
       chat_id: chatId,
-      text: '<b>私信通道自检</b>\n如果你看到这条，说明 bot → 你的会话是通的。\n接下来访客来信会自动推到这里，直接「回复」就能回给他。',
+      text: '<b>私信通道自检</b>\n这条是我手工发的，<b>不是访客</b>，回复它不会有访客收到。\n真正有访客来信时，通知里会显示「👤 昵称」，直接「回复」那条即可回给对方。',
       parse_mode: 'HTML',
       disable_web_page_preview: true
     })

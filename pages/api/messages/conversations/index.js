@@ -59,7 +59,13 @@ export default async function handler(req, res) {
 
     // TG 通知：异步、失败不影响访客（Phase 7）
     void notifyVisitorMessage({
-      conversation: { id: result.id, visitor_name: parsed.value.name, message_count: 1 },
+      conversation: {
+        id: result.id,
+        visitor_name: parsed.value.name,
+        visitor_email: parsed.value.email || null,
+        first_path: typeof req.body?.first_path === 'string' ? req.body.first_path : null,
+        message_count: 1
+      },
       message: { id: result.messageId, content: parsed.value.content },
       isFirst: true
     }).catch(err => console.warn('[messages][tg] notify threw:', err?.message || err))
