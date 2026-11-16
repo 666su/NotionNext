@@ -6,6 +6,42 @@
 
 ## Phase 7 —— Telegram 双向通道（2026-11-15 夜）
 
+### 7.1 上线联调记录（2026-11-16）
+
+这一段是真实排障过程，值得留档——看起来像"环境配错"，实际是**代码执行时机**问题。
+
+| 阶段 | 现象 | 定位手段 | 结论 |
+| --- | --- | --- | --- |
+| ① 首版 | 访客来信后 TG 收不到 | 新建会话后查 `messages.tg_links` 为空 | 出站失败（入站还未知） |
+| ② 加了失败日志 | `access_logs` 出现 `tg_notify: timeout_4000ms` | 4 秒超时被触发 | 不是"没配变量"（那样会记 `not_configured:xxx`） |
+| ③ 加诊断端点 | `/api/telegram/diag` 返回 `getMe 200 · 298ms`，区域 `iad1`，token/chat 正常 | 分段耗时 + 对照域名 | 网络没问题，是**函数被冻结** |
+| ④ 根因 | `void notifyVisitorMessage(...)` 写在 `res.json()` 之后 | 服务器端运行时行为 | **Vercel 响应发出后可随时冻结/回收函数**，后台 fetch 跑不完，计时器复算成 4s 超时 |
+| ⑤ 修复 | 改为**响应前 await**（内部 2.8s 超时兜底）；webhook 回执也恢复 await（3.5s） | 本地 19/19 + 线上实测 | 出站成功、往返成功 |
+
+**可复用的结论**：
+
+1. 在 Vercel（Pages Router 无 `waitUntil`）里，**任何"发完响应再干"的后台任务都不保证执行完**；
+   要可靠就 `await`，并给它一个小于函数时限的短超时。
+2. 失败要**落库**（这里写进 `access_logs`），只在 `console.warn` 里留日志，上线后基本查不到。
+3. 别急着怀疑配置：先做一个**分段诊断**（DNS/TCP/TLS/首字节 + 对照域名），能立刻区分
+   "变量错""网络不通""代码没执行"三类问题。
+4. Telegram webhook 要快速回 200：回执这类额外请求别挡在响应前面（或给它独立超时）。
+
+### 7.2 上线实测链路（2026-11-16 11:42）
+
+```
+访客(韩梅梅) --create--> /api/messages/conversations
+      └─ 入库 + await 推送 TG（成功，tg_links message_id=14）
+你在 TG「回复」那条通知
+      └─ Telegram → /api/telegram/webhook（update_id 27145785）
+            └─ 反查会话 → appendMessage(admin) → 未读清零 → 状态 processing
+                  └─ 访客页面刷新即可看到回复
+```
+
+---
+
+
+
 ### 目标
 
 私信不只进后台，也进你的 TG：**来消息自动推送，直接在 TG 里"回复"那条通知就等于回复访客**。
