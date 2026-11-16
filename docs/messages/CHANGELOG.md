@@ -37,10 +37,43 @@ Redis 幂等查询 → INSERT conversations → INSERT messages → Redis 写幂
 - `createConversation()` 改为一次 `rpc()`，并删掉 Redis 幂等（少 2 次往返、少一个依赖）；
 - 首条消息的推送预算收到 **1.5s**（正常 ~300ms），慢就放弃，不拖慢访客。
 
-### 8.3 验证
+### 8.3 生产实测与取舍（2026-11-16 12:03）
+
+改完 RPC 立刻在生产量了一次（同一台机器、同一网络）：
+
+| 场景 | 耗时 | 说明 |
+| --- | --- | --- |
+| 首次创建（含冷启动） | **3637ms** | 改造前 3860ms，只快约 200ms |
+| 同一 `client_request_id` 重复提交 | 2020ms · `duplicate=true` · 同一会话 | ✅ 新 RPC 幂等正确 |
+| 热路径新建 | **3071ms** | 仍然 >3s |
+
+**结论（老实记录）**：把 4 次串行往返压成 1 次只省了几百毫秒，剩下的大头不在这段代码里——
+更可能是 Vercel 函数冷启动（Hobby 常见 1–2.5s）与 Supabase/Redis 的跨区域 RTT。
+没有仪器时无法区分，所以给创建接口加了 `Server-Timing` 响应头：
+
+```
+Server-Timing: rate;dur=…, db;dur=…, tg;dur=…, total;dur=…
+```
+
+`curl -D -` 就能看到分段，不必翻 Vercel 日志。**因为管理员认为当前速度已可接受，优化到此为止。**
+
+如果将来真要压到 1s 以内，按这个顺序试（按预期收益排序）：
+
+1. **函数区域与 Supabase 同区**：在 Vercel 项目设置里把函数 region 调到数据库所在区域（一个设置，收益最大）；
+2. **合并 Redis 限流检查**：`checkCreateLimits` 现在是 3 个检查 × (INCR + EXPIRE) 串行，
+   改成一次 pipeline 只花 1 个 RTT；
+3. **预热**：每小时一次 cron 打一下创建接口的 health，抵消冷启动（免费额度足够）；
+4. 首条消息的推送预算已收到 1.5s；若 `tg` 段经常吃满，可再降到 800ms 或只推"追问"。
+
+### 8.4 验证
 
 | 套件 | 结果 |
 | --- | --- |
+| `tests/messages_telegram.py` | **25/25**（新增 6 条指令断言） |
+| `tests/messages_phase1.py` | **41/41**（创建链路回归） |
+| 生产幂等 | 重复 `request_id` → `200 duplicate=true` 且同一会话 ✅ |
+
+--- | --- |
 | `tests/messages_telegram.py` | **25/25**（新增 6 条指令断言） |
 | `tests/messages_phase1.py` | **41/41**（创建链路回归） |
 

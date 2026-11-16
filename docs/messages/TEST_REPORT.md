@@ -262,3 +262,19 @@ EBUSY: resource busy or locked, rename '.next/export/zh-CN/article/proxy02.html'
 断言"发了哪些消息、返回哪个 message_id"，**不打扰真实 TG**。
 
 累计：**132 项**（41 + 19 + 29 + 24 + 19）。
+
+---
+
+## 13. Phase 8：TG 指令 + 创建提速（2026-11-16）
+
+| 项目 | 命令 | 结果 |
+| --- | --- | --- |
+| TG 套件（含 6 条指令断言） | `python tests/messages_telegram.py` | ✅ **25/25** |
+| 创建链路回归 | `python tests/messages_phase1.py` | ✅ **41/41** |
+| 生产幂等 | 重复 `client_request_id` | ✅ `200 duplicate=true`、同一会话、不会重复建 |
+
+指令断言覆盖：`/help`（command=help）、`/list`（含短码）、`/close <短码>`（closed 且状态变 resolved）、
+`/close zzzz`（close_not_found）、`/what`（unknown）。
+
+性能实测（生产）：首次 3637ms、热路径 3071ms、重复提交 2020ms。
+结论与后续可选优化路径见 CHANGELOG §8.3；**当前速度已获管理员认可，优化停止**。
