@@ -78,6 +78,7 @@ node scripts/messages-db.mjs print              # 打印 SQL（不想给 token �
 | 版本 | 文件 | 内容 | 状态 |
 | --- | --- | --- | --- |
 | 0001 | `0001_messages_init.sql` | schema `messages` + conversations/messages/access_logs/schema_migrations + 12 索引 + RLS | ✅ 已应用（checksum `a3785fa8de4cf277`） |
+| 0003 | `0003_create_fastpath.sql` | `conversations.create_key` + 唯一索引 + `create_conversation_fast()`（建会话与首条消息一次往返） | ✅ 已应用（Phase 8） |
 | 0002 | `0002_tg_links.sql` | `tg_links`（TG 消息 ↔ 会话）+ `tg_updates`（update_id 幂等）+ 3 索引 | ✅ 已应用（2026-11-15，Phase 7） |
 
 0002 的回滚：`node scripts/messages-db.mjs print` 取 `.down.sql` 内容后在 SQL Editor 执行，

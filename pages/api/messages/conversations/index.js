@@ -68,7 +68,8 @@ export default async function handler(req, res) {
         message_count: 1
       },
         message: { id: result.messageId, content: parsed.value.content },
-        isFirst: true
+        isFirst: true,
+        timeoutMs: 1500 // 首条消息的推送预算：正常 ~300ms，慢就直接放弃，不拖慢访客
       })
     } catch (err) {
       console.warn('[messages][tg] notify threw:', err?.message || err)

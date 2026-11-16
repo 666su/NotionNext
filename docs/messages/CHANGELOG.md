@@ -4,6 +4,48 @@
 
 ---
 
+## Phase 8 —— TG 指令 + 创建私信提速（2026-11-16）
+
+### 目标
+
+1. 在 TG 里就能处理私信（不必每次开后台）；
+2. 把「访客发私信」从 ~3.9s 拉回 ~1s 量级。
+
+### 8.1 TG 指令
+
+| 指令 | 行为 |
+| --- | --- |
+| `/list` | 列出「未读 + 处理中」最多 8 条，含昵称、条数、短码（按最后活动倒序） |
+| `/close <短码>` | 标记已解决 + 未读清零；短码必须唯一命中 |
+| `/help`、`/start` | 指令说明 |
+| 未知指令 | 回提示 + 帮助 |
+
+实现：`webhook.js` 里在「是否引用某条通知」之前分流；`store.findByShortId()` 用 `id like 'xxx%'` 且要求唯一。
+
+### 8.2 创建私信提速
+
+原来一次创建要 **4 条串行网络往返**：
+
+```
+Redis 幂等查询 → INSERT conversations → INSERT messages → Redis 写幂等   （再 + Telegram 推送）
+```
+
+改成 **1 次数据库往返 + 1 次 Telegram**：
+
+- 迁移 `0003`：`conversations.create_key`（= `sha256(ipHash|client_request_id)`）+ 唯一索引；
+- 新函数 `messages.create_conversation_fast(...)`：幂等判定 + 建会话 + 写首条消息，一个 plpgsql 调用完成（并发靠唯一索引兜底，命中即回读原会话）；
+- `createConversation()` 改为一次 `rpc()`，并删掉 Redis 幂等（少 2 次往返、少一个依赖）；
+- 首条消息的推送预算收到 **1.5s**（正常 ~300ms），慢就放弃，不拖慢访客。
+
+### 8.3 验证
+
+| 套件 | 结果 |
+| --- | --- |
+| `tests/messages_telegram.py` | **25/25**（新增 6 条指令断言） |
+| `tests/messages_phase1.py` | **41/41**（创建链路回归） |
+
+---
+
 ## Phase 7 —— Telegram 双向通道（2026-11-15 夜）
 
 ### 7.1 上线联调记录（2026-11-16）

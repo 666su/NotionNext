@@ -220,6 +220,31 @@ def main():
     })
     record('超长内容被拒（不写入）', code == 200 and jb(body).get('error') == 'payload_too_large', jb(body))
 
+    # ---------- 9. 指令：/help /list /close ----------
+    stub_reset()
+    code, body = webhook(anon, {'update_id': 2001, 'message': {'message_id': 20, 'chat': {'id': int(CHAT_ID)}, 'text': '/help'}})
+    record('/help → command=help', code == 200 and jb(body).get('command') == 'help', jb(body))
+
+    stub_reset()
+    code, body = webhook(anon, {'update_id': 2002, 'message': {'message_id': 21, 'chat': {'id': int(CHAT_ID)}, 'text': '/list'}})
+    listed = [c for c in stub_log() if '/sendMessage' in (c.get('path') or '')]
+    record('/list → 列出待处理并含短码', code == 200 and jb(body).get('command') in ('list', 'list_empty')
+           and (not listed or cid[:8] in (listed[-1].get('text') or '')), jb(body))
+
+    stub_reset()
+    code, body = webhook(anon, {'update_id': 2003, 'message': {'message_id': 22, 'chat': {'id': int(CHAT_ID)}, 'text': f'/close {cid[:8]}'}})
+    record('/close 短码 → command=closed', code == 200 and jb(body).get('command') == 'closed', jb(body))
+    row = sql(f"select status from messages.conversations where id = '{cid}';") if cid else None
+    record('结案后状态 resolved', bool(row) and row[0].get('status') == 'resolved', row)
+
+    stub_reset()
+    code, body = webhook(anon, {'update_id': 2004, 'message': {'message_id': 23, 'chat': {'id': int(CHAT_ID)}, 'text': '/close zzzz'}})
+    record('/close 无效短码 → close_not_found', code == 200 and jb(body).get('command') == 'close_not_found', jb(body))
+
+    stub_reset()
+    code, body = webhook(anon, {'update_id': 2005, 'message': {'message_id': 24, 'chat': {'id': int(CHAT_ID)}, 'text': '/what'}})
+    record('未知指令 → unknown', code == 200 and jb(body).get('command') == 'unknown', jb(body))
+
     # ---------- 清理 ----------
     admin, jar = opener()
     if PASSWORD:

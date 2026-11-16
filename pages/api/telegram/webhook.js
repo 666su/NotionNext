@@ -13,8 +13,15 @@
 
 import { audit } from '@/lib/admin/audit'
 import { readMessagesConfig } from '@/lib/messages/config'
-import { claimUpdate, readTgConfig, resolveConversationByReply, sendAck } from '@/lib/messages/telegram'
-import { appendMessage, getConversationDetail, markRead } from '@/lib/messages/store'
+import { claimUpdate, escapeHtml, readTgConfig, resolveConversationByReply, sendAck } from '@/lib/messages/telegram'
+import {
+  appendMessage,
+  findByShortId,
+  getConversationDetail,
+  listConversations,
+  markRead,
+  updateStatus
+} from '@/lib/messages/store'
 import { validateMessagePayload } from '@/lib/messages/validate'
 
 const MAX_ACK_TEXT = 60
@@ -57,6 +64,12 @@ export default async function handler(req, res) {
 
   const text = String(message.text || '').trim()
   if (!text) return res.status(200).json({ ok: true, ignored: 'no_text' })
+
+  // ---- TG 指令：/help /list /close <短码> ----
+  if (text.startsWith('/')) {
+    const result = await handleCommand(text, message)
+    return res.status(200).json({ ok: true, command: result })
+  }
 
   const replyToId = message.reply_to_message?.message_id
   if (!replyToId) {
@@ -132,4 +145,71 @@ export default async function handler(req, res) {
     await sendAck(hint, { replyToMessageId: message.message_id })
     return res.status(200).json({ ok: false, error: code })
   }
+}
+
+const NL = String.fromCharCode(10)
+
+const HELP_TEXT = [
+  '<b>私信机器人指令</b>',
+  '/list —— 看待处理（未读）会话',
+  '/close &lt;短码&gt; —— 把某会话标记为已解决',
+  '',
+  '回复某条私信通知 = 回复那位访客。'
+].join(NL)
+
+async function handleCommand(text, message) {
+  const [rawCmd, ...rest] = text.trim().split(/\s+/)
+  const cmd = rawCmd.toLowerCase().replace(/@[\w_]+$/, '')
+  const replyTo = { replyToMessageId: message.message_id }
+
+  if (cmd === '/help' || cmd === '/start') {
+    await sendAck(HELP_TEXT, replyTo)
+    return 'help'
+  }
+
+  if (cmd === '/list') {
+    const [unread, processing] = await Promise.all([
+      listConversations({ status: 'unread', page: 1, pageSize: 8 }),
+      listConversations({ status: 'processing', page: 1, pageSize: 8 })
+    ])
+    const rows = [...(unread.rows || []), ...(processing.rows || [])]
+      .sort((a, b) => String(b.last_message_at || '').localeCompare(String(a.last_message_at || '')))
+      .slice(0, 8)
+    if (!rows.length) {
+      await sendAck('现在没有待处理的私信 🎉', replyTo)
+      return 'list_empty'
+    }
+    const lines = rows.map((row, index) => {
+      const code = String(row.id).slice(0, 8)
+      const name = escapeHtml(row.visitor_name || '访客')
+      const count = row.message_count || 0
+      return `${index + 1}. <b>${name}</b> · ${count} 条 · <code>${code}</code>`
+    })
+    await sendAck(
+      [`<b>待处理 ${rows.length} 个会话</b>`, ...lines, '', '结案：<code>/close 短码</code>'].join(NL),
+      replyTo
+    )
+    return 'list'
+  }
+
+  if (cmd === '/close') {
+    const code = String(rest[0] || '').trim()
+    if (!code) {
+      await sendAck('用法：<code>/close 短码</code>（短码可用 /list 查看）', replyTo)
+      return 'close_no_arg'
+    }
+    const conv = await findByShortId(code)
+    if (!conv) {
+      await sendAck(`找不到唯一匹配 <code>${escapeHtml(code)}</code> 的会话，请用 /list 里的短码。`, replyTo)
+      return 'close_not_found'
+    }
+    await updateStatus(conv.id, 'resolved')
+    await markRead(conv.id)
+    await sendAck(`✅ 已把 <b>${escapeHtml(conv.visitor_name || '访客')}</b>（${String(conv.id).slice(0, 8)}）标记为已解决`, replyTo)
+    await audit({ action: 'messages.tg_close', result: 'ok', user: 'telegram', ipHash: '', detail: conv.id })
+    return 'closed'
+  }
+
+  await sendAck(`不认识的指令 ${escapeHtml(cmd)}${NL}${NL}${HELP_TEXT}`, replyTo)
+  return 'unknown'
 }
