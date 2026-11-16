@@ -60,11 +60,13 @@ export default async function handler(req, res) {
       clientRequestId: parsed.value.clientRequestId
     })
     if (!duplicated) {
-      // TG 通知：异步、失败不影响访客（Phase 7）
-      void (async () => {
+      // TG 通知：响应前 await（Vercel 响应后会冻结函数），失败不影响访客
+      try {
         const conv = await getConversation(auth.convId)
         await notifyVisitorMessage({ conversation: conv, message, isFirst: false })
-      })().catch(err => console.warn('[messages][tg] notify threw:', err?.message || err))
+      } catch (err) {
+        console.warn('[messages][tg] notify threw:', err?.message || err)
+      }
     }
 
     return json(res, duplicated ? 200 : 201, { ok: true, message, duplicated })

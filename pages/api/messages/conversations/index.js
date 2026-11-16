@@ -57,8 +57,9 @@ export default async function handler(req, res) {
       })
     }
 
-    // TG 通知：异步、失败不影响访客（Phase 7）
-    void notifyVisitorMessage({
+    // TG 通知：Vercel 会在响应后冻结函数，所以必须"响应前 await"（内部 2.8s 超时兜底）
+    try {
+      await notifyVisitorMessage({
       conversation: {
         id: result.id,
         visitor_name: parsed.value.name,
@@ -66,9 +67,12 @@ export default async function handler(req, res) {
         first_path: typeof req.body?.first_path === 'string' ? req.body.first_path : null,
         message_count: 1
       },
-      message: { id: result.messageId, content: parsed.value.content },
-      isFirst: true
-    }).catch(err => console.warn('[messages][tg] notify threw:', err?.message || err))
+        message: { id: result.messageId, content: parsed.value.content },
+        isFirst: true
+      })
+    } catch (err) {
+      console.warn('[messages][tg] notify threw:', err?.message || err)
+    }
 
     return json(res, 201, {
       ok: true,

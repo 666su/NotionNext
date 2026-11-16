@@ -60,7 +60,7 @@ export default async function handler(req, res) {
 
   const replyToId = message.reply_to_message?.message_id
   if (!replyToId) {
-    void sendAck('用「回复」引用某条私信通知再发内容，我才知道发给谁。').catch(() => {})
+    await sendAck('用「回复」引用某条私信通知再发内容，我才知道发给谁。')
     return res.status(200).json({ ok: true, ignored: 'not_a_reply' })
   }
 
@@ -69,9 +69,9 @@ export default async function handler(req, res) {
 
   const link = await resolveConversationByReply(chatId, replyToId)
   if (!link?.conversation_id) {
-    void sendAck('这条通知找不到对应会话（可能已被删除）。请到后台处理。', {
+    await sendAck('这条通知找不到对应会话（可能已被删除）。请到后台处理。', {
       replyToMessageId: message.message_id
-    }).catch(() => {})
+    })
     return res.status(200).json({ ok: true, ignored: 'unknown_link' })
   }
 
@@ -79,7 +79,7 @@ export default async function handler(req, res) {
   const checked = validateMessagePayload({ content: text }, limits)
   if (!checked.ok) {
     const reason = checked.error === 'payload_too_large' ? '内容太长' : '内容不合规'
-    void sendAck(`${reason}，没有发送。`, { replyToMessageId: message.message_id }).catch(() => {})
+    await sendAck(`${reason}，没有发送。`, { replyToMessageId: message.message_id })
     return res.status(200).json({ ok: true, error: checked.error })
   }
 
@@ -100,9 +100,9 @@ export default async function handler(req, res) {
       console.warn('[messages][tg] markRead failed:', err?.message || err)
     }
 
-    void sendAck(`✅ 已发给 ${name}\n「${clip(checked.value.content)}」`, {
+    await sendAck(`✅ 已发给 ${name}\n「${clip(checked.value.content)}」`, {
       replyToMessageId: message.message_id
-    }).catch(() => {})
+    })
 
     await audit({
       action: 'messages.tg_reply',
@@ -129,7 +129,7 @@ export default async function handler(req, res) {
         : code === 'not_found'
           ? '会话已删除或不可写。'
           : '写入失败，请稍后重试或在后台处理。'
-    void sendAck(hint, { replyToMessageId: message.message_id }).catch(() => {})
+    await sendAck(hint, { replyToMessageId: message.message_id })
     return res.status(200).json({ ok: false, error: code })
   }
 }
