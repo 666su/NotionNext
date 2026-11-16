@@ -34,7 +34,9 @@ export default async function handler(req, res) {
     return json(res, status, { error: parsed.error === 'spam_detected' ? 'invalid_input' : parsed.error })
   }
 
+  const tStart = Date.now()
   const limit = await checkCreateLimits(req, cfg.limits)
+  const tRate = Date.now()
   if (!limit.allowed) {
     res.setHeader('Retry-After', String(limit.retryAfter || 60))
     return json(res, 429, { error: 'rate_limited', retryAfter: limit.retryAfter })
@@ -57,6 +59,8 @@ export default async function handler(req, res) {
       })
     }
 
+    const tDb = Date.now()
+
     // TG 通知：Vercel 会在响应后冻结函数，所以必须"响应前 await"（内部 2.8s 超时兜底）
     try {
       await notifyVisitorMessage({
@@ -74,6 +78,12 @@ export default async function handler(req, res) {
     } catch (err) {
       console.warn('[messages][tg] notify threw:', err?.message || err)
     }
+
+    // 分段耗时：方便用 curl -D 直接看瓶颈（不含敏感信息）
+    res.setHeader(
+      'Server-Timing',
+      `rate;dur=${tRate - tStart}, db;dur=${tDb - tRate}, tg;dur=${Date.now() - tDb}, total;dur=${Date.now() - tStart}`
+    )
 
     return json(res, 201, {
       ok: true,
